@@ -1,0 +1,2449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Morph Lab</title>
+<script>
+  // Applied synchronously, before CSS paints, so there's no flash of the
+  // wrong theme. Full toggle wiring lives in the main script at the bottom.
+  (function () {
+    try {
+      var saved = localStorage.getItem("morphlab-theme");
+      var theme = saved || (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+      if (theme === "light") document.documentElement.setAttribute("data-theme", "light");
+    } catch (e) {}
+  })();
+</script>
+<!-- Inline data URI so the icon works with zero setup in Chrome/Edge/Firefox.
+     Safari doesn't reliably honor data: URI favicons though, so it also gets a
+     fallback link to a real file — keep favicon.png next to this HTML file in
+     the same folder for the tab icon to show up there too. -->
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAGEklEQVR4nK1WXWxcVxGemXPu3nt37azj+Ce+sZ3ESmLaIJqkSIVCQRWJUSFN3QdekCohUX6kPIAAIRAPPPFEoVSEVlDEA7z1N0rTpxRVtKQ/KhAVmipxoq5DbW9xXDu73r3/M8ODvVvHu1ASMY/nnvN9M/PNnRlUVREhosXFq48+9uvTp5+fm59PkgRu3FzXHR3dcezeo9/8xteHhgbXYDHPc2PMqVPPfed735+dveK6ruM4iHgTBKqaZVmSJLt27fz5Qz89duwoM6Oqnnru9PT9X/I9r1gqMrOq3gT6miGiMSZsNuM4OXnyqXuPfhGr1eqn77q7+t57xWIxz/Obht5o1tpmMwyCkbMvv0i/PPFoZXb2/4gOAHmel0rFSmX2xK8ew0O333FxZqZQKHTJDOK6GIigCgCqiqrtYwBQBe2WU0RM03Ry3z4cHN6RpulmVRERUXKWNBVmUAVEMsa6BUZK0pxZVAERDJFbIMeQdPCoquu62Nc/tJmcSJjzMHL7ylsmdpaC7U5vDzea9bmFxcuzPRxP7hocH+7dUrT1ZnblavPSXG15NSl61hJJRzC2E52TxHj+vi9/YfRzny0OD5LjEGHK4nB+KG3e1qgMNC46wGQdFUlyqS6Hp1+be+KlSpSyVzAi13FcFwEScRz7Q4OHfvCt/lsn8zDiLEPVVLS/YL6yc9uevlKCTrj4buONUxLVwDgE6lhT8uyb7yz/8Hd/qS7HfsFsjGMDAaLmbEv+J37yo/LuXUm9TsYgIit4Bo/vHgh828jEqJBX5Npi49UnNEsAjarmIlt73ItzteMnXm1EuTXYpqANugKn6a0PPlDeM5HU62QtIAJApjI9Uh71nWaulhCN0SQ0fcP+/ruVc0BABMfQSiO5Zazv2/fvTzJG+KBkqJ2cPIy33bY/uOuT6Ro6ACIkontL7sGy32Qx7VdkNImcYNIOjGuervnhGLrWTI4cCj6+dyBMcmqVZSsCBGEOPnWHcQsg7TNg1QNl3yHsqA5FYwvBJIhAy19V8Bxz+OBIztIu+3UCZbG+V96zW7IMaP2jKHiGRn2HVTu6H4KwKQ+jLYBKO8kpy+RYuehabtUSrcsrYot+YUuvsrShRMEl7LGGu/ypoKro+mgL0IoOAYW1r8ctelZEcZPIraz876adtxUA8ToUAgBQRSKO4rTRQKK2u4SQiIYs1A0JkSSN2yIDgIIawnozDRMmQt0YARrKwqh+uUKOA+30IcQsc1FmsYvIQIZri5qngC0hFQqWLszVmnFmaFMVKZAxCy+/xlnajlABDOK5WpRJN5E5T+cvABFASwOEOOMzf10wRJt/NBWxRW/p729V//x6obxF8nzNI5dwppG8WY9KhvJ2EMLo+ml1Jl+60hY5y6Wvx/3jueobM0slz7a7xQciq4JxnLcf/0PtcsUtb5Gc1146CM8u1OairNdSLqrM6Bb52r+it15EY0FBFXKW/l73wj+vPfzMedcxCl17UauVetv6D3z3+OCBj+ZRxGmGAJlI2bEPjPffsrUnIdtcqDT+9rxEq2gdBC1YU/Ls6xeu/vj35xZr8aaGunkeIBEnKVqz++jU+D2Hi8ODaK1BTEWI5WDSuH310mDzkkVFY0E1Y1lYCp8+e+XJlyo5q/vf23WLA1U0b4aFrX1bP7K3FAwb15UkbSxUF87P9HL0sb3bx4Z6PQfjVN5dav6jsvJ+PSn51iB2DhzcHoxHUdS5CCGR5DknqQqDAiAQGeu5jBQnGYu2RiZ6BeMYkg5sVfV9346NjZ4//7bruptGqoqgMU6pCAgACKCgoKpGtcd32u4ogIqydDi+NvQn99Hnp47ESWKMgU5TVRFlUWZlURFQVYD1M1k7676mGWPiJJmaOoJz8/N33vmZpfeXfd9j5m6Xb9iMMVEUDwxse+Xsn2hHEDzyi5/FcRSGobWWiD4c4D8bEVlrwzCM4+iRhx/aEQTEzNPT9z379JNBMLKyshJFkYh8OFI3E5EoilZWVoJg5OQzT01P37e+/LKIIVpcvPqbx3975swL71RmV1dXb3TBVtXe3p6JiYmpI4e/9uBXh4YG12D/DaEvan+MYdVJAAAAAElFTkSuQmCC" />
+<link rel="icon" type="image/png" href="./favicon.png" />
+<link rel="apple-touch-icon" href="./favicon.png" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script type="module">
+  // Loads eagerly on page load (not lazily on toggle) per request. This is a
+  // real ML model — a few MB — fetched once and cached by the browser after.
+  // Uses the CPU delegate (see below), so unlike this file's Canvas2D
+  // renderer swap, this feature was never blocked by Safari's WebGL problem
+  // in the first place — left as-is here, untested in Safari specifically
+  // but with no obvious reason it wouldn't work.
+  import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs";
+  window.__faceLandmarkerReady = (async () => {
+    const fileset = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm");
+    return await FaceLandmarker.createFromOptions(fileset, {
+      baseOptions: {
+        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+        delegate: "CPU", // one-shot detection on a still image, not real-time video — no need to risk GPU-delegate flakiness for the speed
+      },
+      runningMode: "IMAGE",
+      numFaces: 1,
+    });
+  })();
+</script>
+<style>
+  :root {
+    --bg: #101216;
+    --surface: #181a1f;
+    --well-bg: #0a0b0d;
+    --panel-border: #2a2d34;
+    --text: #EDEAE3;
+    --muted: #8b8f97;
+    --dim: #5b5f68;
+    --accent: #5ecdc4;
+    --accent-hover: #7ee0d8;
+    --accent-tint: rgba(94,205,196,0.08);
+    --accent-tint-light: rgba(94,205,196,0.05);
+    --accent-b: #e0a458;
+    --danger: #e05a5a;
+    --danger-tint: rgba(224,90,90,0.08);
+  }
+  html[data-theme="light"] {
+    --bg: #f5f3ee;
+    --surface: #e9e6de;
+    --well-bg: #e2dfd6;
+    --panel-border: #d1cdc2;
+    --text: #201e1a;
+    --muted: #6b665c;
+    --dim: #9c9689;
+    --accent: #0e8a7d;
+    --accent-hover: #0a6d63;
+    --accent-tint: rgba(14,138,125,0.10);
+    --accent-tint-light: rgba(14,138,125,0.06);
+    --accent-b: #a8631a;
+    --danger: #c23f3f;
+    --danger-tint: rgba(194,63,63,0.10);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  .mono { font-family: "SF Mono", "Roboto Mono", Menlo, Consolas, monospace; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 32px 20px 60px; }
+  header { margin-bottom: 24px; }
+  header .title-row { display: flex; align-items: flex-start; gap: 8px; }
+  header h1 { font-size: 17px; font-weight: 500; letter-spacing: -0.01em; margin: 0; align-self: center; }
+  header p { font-size: 13.5px; color: var(--muted); line-height: 1.55; margin: 8px 0 0; max-width: 56ch; }
+  .header-right { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+
+  .view-tabs-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+  .settings-anchor { position: relative; flex-shrink: 0; }
+  .settings-popout {
+    position: absolute; top: calc(100% + 8px); right: 0; z-index: 50;
+    width: 360px; max-width: calc(100vw - 40px);
+    background: var(--surface); border: 1px solid var(--panel-border); border-radius: 8px;
+    padding: 14px 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+  .settings-popout-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+  #renderActionRow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+
+  .mode-tabs { display: flex; gap: 8px; margin-bottom: 22px; flex-wrap: wrap; }
+  .format-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+  .format-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .mode-tab {
+    font-family: inherit; font-size: 12.5px;
+    background: none; border: 1px solid var(--panel-border); color: var(--muted);
+    padding: 7px 14px; border-radius: 999px; cursor: pointer;
+  }
+  .mode-tab.active { border-color: var(--accent); color: var(--accent); background: var(--accent-tint); }
+  .mode-tab:hover:not(.active) { color: var(--text); }
+
+  .panels { display: flex; gap: 16px; margin-bottom: 6px; }
+  .panel { flex: 1; min-width: 0; }
+  .panel-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .panel-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .panel-hint { font-size: 11px; }
+  .canvas-box {
+    position: relative; aspect-ratio: var(--canvas-ar, 480/360); background: var(--well-bg);
+    border: 1px solid var(--panel-border); border-radius: 6px; overflow: hidden;
+  }
+  .canvas-box.awaiting-a { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .canvas-box.awaiting-b { border-color: var(--accent-b); box-shadow: 0 0 0 1px var(--accent-b); }
+  canvas.click-target { width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: none; }
+  .drop-label {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 8px; color: var(--dim); cursor: pointer;
+  }
+  .drop-label:hover { color: var(--muted); }
+  .drop-label span { font-size: 11px; }
+  .replace-link {
+    display: inline-flex; align-items: center; gap: 6px; margin-top: 8px;
+    background: var(--surface); border: 1px solid var(--panel-border); color: var(--text);
+    font-size: 11px; cursor: pointer; padding: 6px 11px; border-radius: 6px; font-family: inherit;
+    transition: background-color .15s, border-color .15s, color .15s;
+  }
+  .replace-link:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-tint); }
+  .replace-link:active { transform: translateY(1px); }
+
+  .points-row { display: flex; justify-content: space-between; align-items: center; margin: 18px 0 22px; font-size: 12px; color: var(--muted); }
+  .points-row .hint-b { color: var(--accent-b); }
+  .points-actions { display: flex; gap: 14px; }
+  .icon-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--panel-border); color: var(--text);
+    font-size: 12px; cursor: pointer; padding: 7px 12px; border-radius: 6px; font-family: inherit;
+    transition: background-color .15s, border-color .15s, color .15s;
+  }
+  .icon-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: var(--accent-tint); }
+  .icon-btn:active:not(:disabled) { transform: translateY(1px); }
+  .icon-btn:disabled { opacity: 0.35; cursor: default; }
+  .cancel-btn:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); background: var(--danger-tint); }
+
+  .zip-parts-list { display: flex; flex-direction: column; gap: 6px; }
+  .zip-part-link {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: var(--surface); border: 1px solid var(--panel-border); border-radius: 6px;
+    padding: 8px 12px; color: var(--text); text-decoration: none; font-size: 12px;
+    font-family: "SF Mono", "Roboto Mono", Menlo, Consolas, monospace;
+    transition: border-color .15s, color .15s, background-color .15s;
+  }
+  .zip-part-link:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-tint); }
+  .zip-part-link .zpl-label { display: flex; align-items: center; gap: 8px; }
+  .zip-part-link .zpl-meta { color: var(--muted); font-size: 11px; }
+  .zip-part-link:hover .zpl-meta { color: inherit; }
+  .helptext { font-size: 11.5px; color: var(--dim); margin: 0 0 22px; line-height: 1.6; }
+
+  .card { border: 1px solid var(--panel-border); border-radius: 6px; padding: 16px; margin-bottom: 16px; }
+  .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .card-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+
+  .dropzone {
+    border: 1.5px dashed var(--panel-border); border-radius: 8px; padding: 30px 20px;
+    text-align: center; color: var(--dim); transition: border-color .15s, color .15s;
+  }
+  .dropzone.drag-over { border-color: var(--accent); color: var(--accent); background: var(--accent-tint-light); }
+  .dropzone svg { margin-bottom: 8px; }
+  .dropzone .sub { font-size: 11px; margin-top: 6px; }
+  .dropzone .links { margin-top: 12px; display: flex; gap: 8px; justify-content: center; }
+  .dropzone .links a {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--panel-border); color: var(--text);
+    font-size: 11.5px; cursor: pointer; padding: 6px 12px; border-radius: 6px; font-family: inherit;
+    transition: background-color .15s, border-color .15s, color .15s;
+  }
+  .dropzone .links a:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-tint); }
+  .dropzone .links a:active { transform: translateY(1px); }
+
+  .batch-meta { display: flex; justify-content: space-between; align-items: center; margin: 14px 0 10px; font-size: 12px; color: var(--muted); }
+  .thumb-strip { display: flex; flex-wrap: wrap; gap: 8px; }
+  .thumb {
+    position: relative; width: 72px; height: 54px; border-radius: 4px; overflow: hidden;
+    border: 1px solid var(--panel-border); background: var(--well-bg); cursor: grab;
+  }
+  .thumb:active { cursor: grabbing; }
+  .thumb.dragging { opacity: 0.35; }
+  .thumb.drag-over-left { box-shadow: -3px 0 0 0 var(--accent); }
+  .thumb.drag-over-right { box-shadow: 3px 0 0 0 var(--accent); }
+  .thumb:hover { border-color: var(--accent); }
+  .thumb.selected { border-color: var(--accent-b); box-shadow: 0 0 0 1px var(--accent-b); }
+  .thumb img, .thumb canvas { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb .idx {
+    position: absolute; bottom: 2px; left: 3px; font-size: 9px; color: #fff;
+    background: rgba(0,0,0,0.55); padding: 0 4px; border-radius: 3px;
+  }
+
+  .export-controls { display: flex; flex-wrap: wrap; gap: 22px; margin-bottom: 16px; }
+  .slider-field { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--muted); }
+  .slider-label-text { white-space: nowrap; }
+  .slider-field input[type="range"] { width: 140px; margin-top: 0; accent-color: var(--accent); }
+  .select-field { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--muted); }
+  .select-field select {
+    font-family: inherit; font-size: 12.5px; background: var(--surface); color: var(--text);
+    border: 1px solid var(--panel-border); border-radius: 4px; padding: 6px 8px;
+  }
+
+  .render-btn {
+    display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: var(--bg);
+    border: none; padding: 9px 16px; border-radius: 5px; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  }
+  .render-btn:hover:not(:disabled) { background: var(--accent-hover); }
+  .render-btn:disabled { opacity: 0.5; cursor: default; }
+  .status-line { font-size: 11.5px; color: var(--dim); margin-top: 10px; min-height: 14px; }
+
+  .output-block { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--panel-border); }
+  video { width: 100%; border-radius: 4px; border: 1px solid var(--panel-border); display: block; }
+  .download-link {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 12px;
+    background: var(--accent); color: var(--bg); border: none;
+    padding: 9px 16px; border-radius: 5px; font-size: 13px; font-weight: 600;
+    text-decoration: none; cursor: pointer; transition: background-color .15s;
+  }
+  .download-link:hover { background: var(--accent-hover); }
+  .download-link:active { transform: translateY(1px); }
+  svg.ic { width: 14px; height: 14px; flex-shrink: 0; }
+
+  .crop-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; padding: 20px;
+  }
+  .crop-modal {
+    background: var(--bg); border: 1px solid var(--panel-border); border-radius: 8px;
+    padding: 16px; width: 100%; max-width: 600px;
+  }
+  .crop-modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  #cropCanvas {
+    width: 100%; display: block; border-radius: 4px; border: 1px solid var(--panel-border);
+    background: var(--well-bg); cursor: grab; touch-action: none;
+  }
+  #cropCanvas:active { cursor: grabbing; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title-row">
+      <svg class="ic" style="width:18px;height:18px;color:var(--accent)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M7 6v12M17 6v12M2 10h5M2 14h5M17 10h5M17 14h5"/></svg>
+      <h1 class="mono">morph lab</h1>
+      <div class="header-right">
+        <button class="icon-btn mono" id="themeToggleBtn" title="Toggle light/dark theme">
+          <svg class="ic" id="themeToggleIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"></svg>
+          <span id="themeToggleText">dark</span>
+        </button>
+        <div class="mode-tabs" style="margin-bottom:0">
+          <button class="mode-tab active mono" id="tabSingle">single pair</button>
+          <button class="mode-tab mono" id="tabBatch">batch sequence</button>
+        </div>
+      </div>
+    </div>
+    <p>Mark matching points on a start and end image, or drop in a whole sequence. Everything renders in your browser — nothing is uploaded.</p>
+  </header>
+
+  <div class="main-col">
+
+  <div class="view-tabs-row">
+    <div class="mode-tabs" id="viewTabs" style="margin-bottom:0">
+      <button class="mode-tab active mono" id="viewTabImages">start &middot; end images</button>
+      <button class="mode-tab mono" id="viewTabRendered" style="display:none">rendered</button>
+    </div>
+    <div class="settings-anchor">
+      <button class="icon-btn mono" id="settingsBtn" title="Format &amp; export settings">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>settings</span>
+      </button>
+      <div class="settings-popout" id="settingsPopout" style="display:none">
+        <div class="settings-popout-head">
+          <div class="mode-tabs" id="settingsTabs" style="margin-bottom:0">
+            <button class="mode-tab active mono" id="settingsTabFormat">format</button>
+            <button class="mode-tab mono" id="settingsTabExport">export</button>
+          </div>
+          <button class="icon-btn" id="settingsCloseBtn" style="padding:4px 9px">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div id="settingsFormatPane">
+          <div class="format-row" style="margin-top:14px">
+            <span class="mono format-label">format</span>
+            <div class="mode-tabs" id="formatTabs" style="margin-bottom:0">
+              <button class="mode-tab active mono" data-format="auto">auto</button>
+              <button class="mode-tab mono" data-format="square">1:1</button>
+              <button class="mode-tab mono" data-format="16:9">16:9</button>
+              <button class="mode-tab mono" data-format="9:16">9:16</button>
+              <button class="mode-tab mono" data-format="4:3">4:3</button>
+              <button class="mode-tab mono" data-format="3:4">3:4</button>
+            </div>
+          </div>
+          <p class="helptext" id="formatHelp" style="margin:-4px 0 0">Sets the shape everything crops to — pick one before uploading to start there, or switch any time to re-crop. "Auto" just uses your first image's own shape.</p>
+        </div>
+
+        <div id="settingsExportPane" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 10px">
+            <span class="card-label mono">export settings</span>
+            <span class="mono" id="resolutionLabel" style="font-size:11px;color:var(--muted)"></span>
+          </div>
+          <div class="export-controls">
+            <label class="slider-field">
+              <span class="slider-label-text">hold per image (<span id="holdVal">2.0</span>s)</span>
+              <input type="range" id="holdSlider" min="0" max="3" step="0.1" value="2" />
+            </label>
+            <label class="slider-field">
+              <span class="slider-label-text">transition (<span id="durVal">5.0</span>s)</span>
+              <input type="range" id="durationSlider" min="0.5" max="8" step="0.5" value="5" />
+            </label>
+            <label class="slider-field">
+              <span class="slider-label-text">fps (<span id="fpsVal">30</span>)</span>
+              <input type="range" id="fpsSlider" min="12" max="30" step="1" value="30" />
+            </label>
+          </div>
+          <div style="margin-bottom:14px">
+            <div class="mode-tabs" id="formatTabsVideo" style="margin-bottom:6px">
+              <button class="mode-tab active mono" data-videofmt="mp4">mp4</button>
+              <button class="mode-tab mono" data-videofmt="webm">webm</button>
+            </div>
+            <p class="helptext" style="margin:0">MP4 plays everywhere but can't carry transparency — any transparent area renders as solid black. WebM keeps real transparency (handy for "export PNG sequence" alternatives or compositing), but isn't supported by every video player/editor.</p>
+          </div>
+          <button class="icon-btn mono" id="pngSeqBtn" disabled title="Every frame as a transparent PNG in a zip — for tools that support real alpha video, like ffmpeg or After Effects" style="width:100%;justify-content:center">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            <span id="pngSeqBtnText">export PNG sequence</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="imagesView">
+
+  <!-- SINGLE MODE -->
+  <div id="singleSection">
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-label-row">
+          <span class="panel-label mono">start</span>
+          <span class="panel-hint mono" id="hintA" style="color:var(--accent)"></span>
+        </div>
+        <div class="canvas-box" id="boxA">
+          <canvas class="click-target" id="canvasA" width="480" height="360"></canvas>
+          <label class="drop-label" id="dropA">
+            <svg class="ic" style="width:20px;height:20px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            <span class="mono">jpg or png</span>
+            <input type="file" accept="image/jpeg,image/png" id="fileA" style="display:none" />
+          </label>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a class="replace-link mono" id="replaceA" style="display:none">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7"/></svg>
+            replace image
+          </a>
+          <a class="replace-link mono" id="cropA" style="display:none">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+            crop
+          </a>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label-row">
+          <span class="panel-label mono">end</span>
+          <span class="panel-hint mono" id="hintB" style="color:var(--accent-b)"></span>
+        </div>
+        <div class="canvas-box" id="boxB">
+          <canvas class="click-target" id="canvasB" width="480" height="360"></canvas>
+          <label class="drop-label" id="dropB">
+            <svg class="ic" style="width:20px;height:20px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            <span class="mono">jpg or png</span>
+            <input type="file" accept="image/jpeg,image/png" id="fileB" style="display:none" />
+          </label>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a class="replace-link mono" id="replaceB" style="display:none">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7"/></svg>
+            replace image
+          </a>
+          <a class="replace-link mono" id="cropB" style="display:none">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+            crop
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="points-row mono" id="pointsRow" style="display:none">
+      <span id="pointsCount"></span>
+      <div class="points-actions">
+        <button class="icon-btn" id="detectFacesBtn" style="display:none">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/><path d="M8 15c1.2 1 2.5 1.5 4 1.5s2.8-.5 4-1.5"/></svg>
+          <span id="detectFacesBtnText">detect faces</span>
+        </button>
+        <button class="icon-btn" id="undoBtn">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7"/></svg>
+          undo
+        </button>
+        <button class="icon-btn" id="clearBtn">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          clear
+        </button>
+      </div>
+    </div>
+    <p class="helptext" id="preHelp">Click a point on "start," then the matching spot on "end," to build a pair — eyes, corners, edges. Drag any existing marker to nudge it. A few pairs go a long way.</p>
+  </div>
+
+  <!-- BATCH MODE -->
+  <div id="batchSection" style="display:none">
+    <div class="dropzone" id="dropZone">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>
+      <div class="mono">drop a folder of JPEGs/PNGs here</div>
+      <div class="sub mono">images are sequenced in filename order, capped at <span id="maxBatchLabel"></span></div>
+      <div class="links mono">
+        <a id="chooseFolder">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>
+          choose a folder
+        </a>
+        <a id="chooseFiles">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3v5a1 1 0 0 0 1 1h5"/><path d="M6 3h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>
+          choose files
+        </a>
+      </div>
+      <input type="file" id="folderInput" webkitdirectory directory multiple style="display:none" />
+      <input type="file" id="filesInput" accept="image/jpeg,image/png" multiple style="display:none" />
+    </div>
+    <div class="batch-meta mono" id="batchMeta" style="display:none">
+      <span id="batchCount"></span>
+      <button class="icon-btn" id="batchClearBtn">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        clear
+      </button>
+    </div>
+    <p class="helptext" id="thumbHint" style="display:none;margin:0 0 8px">Drag a thumbnail to reorder the sequence. Click one to select it or jump to its transition.</p>
+    <div class="thumb-strip" id="thumbStrip" style="margin-top:10px"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:10px" id="thumbActionsRow">
+      <button class="icon-btn cancel-btn mono" id="batchDeleteBtn" disabled>
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        <span id="batchDeleteBtnText">delete selected image</span>
+      </button>
+      <span class="mono" id="selectedThumbLabel" style="font-size:11px;color:var(--muted)">click a thumbnail to select it</span>
+    </div>
+
+    <div class="card" id="batchPointsCard" style="display:none;margin-top:16px">
+      <div class="card-head">
+        <span class="card-label mono">transition points (optional)</span>
+      </div>
+      <p class="helptext" style="margin-bottom:14px">
+        Click matching points on each pair to guide that transition — skip a pair and it just cross-dissolves.
+      </p>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px">
+        <button class="icon-btn" id="pairPrevBtn">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 18l-6-6 6-6"/></svg>
+          prev
+        </button>
+        <span class="mono" id="pairLabel" style="font-size:12px;color:var(--accent)"></span>
+        <button class="icon-btn" id="batchCopyPrevBtn" title="Continues the previous transition's motion into this pair">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 4h9a2 2 0 0 1 2 2v9"/><rect x="4" y="8" width="12" height="12" rx="1.5"/></svg>
+          copy from previous
+        </button>
+        <button class="icon-btn" id="pairNextBtn">
+          next
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+      <div class="panels">
+        <div class="panel">
+          <div class="panel-label-row">
+            <span class="panel-label mono" id="batchLabelA">image 1</span>
+            <span class="panel-hint mono" id="batchHintA" style="color:var(--accent)"></span>
+          </div>
+          <div class="canvas-box" id="batchBoxA">
+            <canvas class="click-target" id="batchCanvasA" width="480" height="360"></canvas>
+          </div>
+          <p class="mono" id="batchFileNameA" style="font-style:italic;font-size:11px;color:var(--muted);margin:6px 0 0"></p>
+        </div>
+        <div class="panel">
+          <div class="panel-label-row">
+            <span class="panel-label mono" id="batchLabelB">image 2</span>
+            <span class="panel-hint mono" id="batchHintB" style="color:var(--accent-b)"></span>
+          </div>
+          <div class="canvas-box" id="batchBoxB">
+            <canvas class="click-target" id="batchCanvasB" width="480" height="360"></canvas>
+          </div>
+          <p class="mono" id="batchFileNameB" style="font-style:italic;font-size:11px;color:var(--muted);margin:6px 0 0"></p>
+        </div>
+      </div>
+      <div class="points-row mono">
+        <span id="batchPointsCount"></span>
+        <div class="points-actions">
+          <button class="icon-btn" id="batchDetectFacesBtn" style="display:none">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/><path d="M8 15c1.2 1 2.5 1.5 4 1.5s2.8-.5 4-1.5"/></svg>
+            <span id="batchDetectFacesBtnText">detect faces</span>
+          </button>
+          <button class="icon-btn" id="batchUndoBtn">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7"/></svg>
+            undo
+          </button>
+          <button class="icon-btn" id="batchClearPairBtn">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+            clear pair
+          </button>
+        </div>
+      </div>
+    </div>
+    </div>
+
+  <div class="format-row">
+    <span class="mono format-label">face mode</span>
+    <div class="mode-tabs" id="faceModeTabs" style="margin-bottom:0">
+      <button class="mode-tab mono" data-facemode="off">off</button>
+      <button class="mode-tab mono" data-facemode="on">on</button>
+    </div>
+    <span class="mono" id="faceModeStatus" style="font-size:11px;color:var(--muted)"></span>
+  </div>
+  <p class="helptext" id="faceModeHelp" style="margin:-4px 0 22px;display:none">Automatically finds ~40 facial landmarks (eyes, brows, nose, mouth, jaw) on each image instead of clicking points by hand. Every point is still fully draggable afterward — this is a starting point, not a final answer. Runs on CPU, so it isn't tied to the same WebGL issue as the renderer — but detection speed and reliability across browsers hasn't been tested here.</p>
+
+  <div id="renderActionRow" style="display:none">
+    <button class="render-btn mono" id="renderBtn" disabled>
+      <svg class="ic" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M6 4l14 8-14 8V4z"/></svg>
+      <span id="renderBtnText">render video</span>
+    </button>
+    <button class="icon-btn mono cancel-btn" id="cancelBtn" style="display:none">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg>
+      <span id="cancelBtnText">cancel</span>
+    </button>
+  </div>
+  <div class="status-line mono" id="statusLine"></div>
+
+  </div>
+
+  <div id="renderedView" style="display:none">
+    <div class="status-line mono" id="renderedStatusLine" style="margin-bottom:10px"></div>
+    <div class="output-block" id="outputBlock" style="display:none;margin-top:0;padding-top:0;border-top:none">
+      <video id="outputVideo" controls loop></video>
+      <p class="helptext" style="margin:8px 0 0">space/k play&middot;pause &nbsp; ←/→ 5s &nbsp; j/l 10s &nbsp; ,/. frame step &nbsp; m mute &nbsp; f fullscreen &nbsp; 0&ndash;9 seek%</p>
+      <a class="download-link mono" id="downloadLink" download="morph.mp4">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v12M12 16l-4-4M12 16l4-4"/><path d="M4 18v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1"/></svg>
+        <span id="downloadLabel">download morph.mp4</span>
+      </a>
+    </div>
+    <div class="zip-parts-list" id="zipPartsList" style="display:none"></div>
+  </div>
+
+  </div>
+  </div>
+
+  <canvas id="hiddenOutput" width="480" height="360" style="position:absolute; left:-99999px; top:-99999px;"></canvas>
+
+  <!-- CROP MODAL -->
+  <div class="crop-overlay" id="cropOverlay" style="display:none">
+    <div class="crop-modal">
+      <div class="crop-modal-head">
+        <span class="mono" id="cropModalTitle" style="font-size:12px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase">crop</span>
+        <button class="icon-btn" id="cropCancelBtn" style="padding:4px 9px">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <canvas id="cropCanvas" width="560" height="420"></canvas>
+      <p class="helptext" style="margin:10px 0">Drag inside the box to reposition it, or drag a corner to resize. Use the slider to zoom in for a tighter crop, or zoom out to shrink the image within the frame (the extra space fills in as transparent) — the box always keeps the output's proportions.</p>
+      <label class="slider-field" style="margin-bottom:14px">
+        zoom
+        <input type="range" id="cropZoomSlider" min="-1" max="1" step="0.01" value="0" style="width:100%" />
+      </label>
+      <div style="display:flex;justify-content:space-between;gap:10px">
+        <button class="icon-btn" id="cropResetBtn">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7"/></svg>
+          reset
+        </button>
+        <button class="render-btn mono" id="cropApplyBtn">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+          apply crop
+        </button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function () {
+  let W = 480, H = 360; // placeholder until the first image sets the real working resolution
+  const MAX_DIM = 3840; // cap the longest edge so render time/file size stay sane (4K)
+  // iOS Safari (and iPadOS, which reports as "Mac" but has touch support) enforces
+  // a much lower canvas AREA limit than desktop browsers — roughly 4096x4096 total
+  // pixels — regardless of the longest-edge cap above. Exceeding it silently fails
+  // to render (blank/black canvas), so clamp separately by total area on iOS.
+  const IS_IOS = /iP(hone|od|ad)/.test(navigator.platform) ||
+    (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+  const IOS_MAX_AREA = 4096 * 4096;
+  let resolutionSet = false;
+  const MAX_BATCH = 20;
+  document.getElementById("maxBatchLabel").textContent = MAX_BATCH + " images";
+
+  // ---- format / aspect-ratio selector ----
+  const FORMAT_PRESETS = {
+    auto: null, square: 1, "16:9": 16 / 9, "9:16": 9 / 16, "4:3": 4 / 3, "3:4": 3 / 4,
+  };
+  let activeFormat = "auto";
+  let forcedAspectRatio = null; // null = derive from the first uploaded image ("auto")
+  let sourceMaxDim = 0; // largest natural image dimension seen so far, used to (re)size when format changes
+  let firstImageAR = null; // natural aspect ratio of the very first image ever uploaded — what "auto" targets
+
+  let BOUNDARY = buildBoundary();
+  function buildBoundary() {
+    return [
+      { x: 0, y: 0 }, { x: W / 2, y: 0 }, { x: W, y: 0 },
+      { x: W, y: H / 2 }, { x: W, y: H }, { x: W / 2, y: H },
+      { x: 0, y: H }, { x: 0, y: H / 2 },
+    ];
+  }
+  // Canvas 2D drawing can't use CSS custom properties directly, so these are
+  // read from the live CSS values and refreshed whenever the theme toggles.
+  function cssVar(name, fallback) {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return v || fallback;
+  }
+  let ACCENT = cssVar("--accent", "#5ecdc4");
+  let ACCENT_B = cssVar("--accent-b", "#e0a458");
+  let MARKER_INK = cssVar("--bg", "#101216"); // stroke/number color on top of a marker circle
+  let POINT_RADIUS = 10;   // scaled with resolution in applyResolution()
+  let HIT_RADIUS = 15;     // scaled with resolution in applyResolution()
+  let FONT = "bold 16px monospace"; // scaled with resolution in applyResolution()
+
+  // ---- mode ----
+  let mode = "single"; // "single" | "batch"
+  const tabSingle = document.getElementById("tabSingle");
+  const tabBatch = document.getElementById("tabBatch");
+  const singleSection = document.getElementById("singleSection");
+  const batchSection = document.getElementById("batchSection");
+  const viewTabImages = document.getElementById("viewTabImages");
+  function setMode(m) {
+    mode = m;
+    tabSingle.classList.toggle("active", m === "single");
+    tabBatch.classList.toggle("active", m === "batch");
+    singleSection.style.display = m === "single" ? "block" : "none";
+    batchSection.style.display = m === "batch" ? "block" : "none";
+    viewTabImages.textContent = m === "single" ? "start · end images" : "image sequence";
+    updateRenderEnabled();
+  }
+  tabSingle.addEventListener("click", () => setMode("single"));
+  tabBatch.addEventListener("click", () => setMode("batch"));
+
+  // ---- single-mode state ----
+  let hasA = false, hasB = false;
+  let points1 = [], points2 = [];
+  let pending = null;
+  let dragPanel = null, dragIndex = null, dragMoved = false;
+
+  const cleanA = document.createElement("canvas"); cleanA.width = W; cleanA.height = H;
+  const cleanB = document.createElement("canvas"); cleanB.width = W; cleanB.height = H;
+  const tempA = document.createElement("canvas"); tempA.width = W; tempA.height = H;
+  const tempB = document.createElement("canvas"); tempB.width = W; tempB.height = H;
+
+  const canvasA = document.getElementById("canvasA");
+  const canvasB = document.getElementById("canvasB");
+  const boxA = document.getElementById("boxA");
+  const boxB = document.getElementById("boxB");
+  const hintA = document.getElementById("hintA");
+  const hintB = document.getElementById("hintB");
+  const pointsRow = document.getElementById("pointsRow");
+  const pointsCount = document.getElementById("pointsCount");
+  const preHelp = document.getElementById("preHelp");
+  const undoBtn = document.getElementById("undoBtn");
+  const clearBtn = document.getElementById("clearBtn");
+
+  // ---- batch-mode state ----
+  let batchImages = []; // array of clean canvases, in sequence order
+  const dropZone = document.getElementById("dropZone");
+  const batchMeta = document.getElementById("batchMeta");
+  const batchCount = document.getElementById("batchCount");
+  const thumbStrip = document.getElementById("thumbStrip");
+  const thumbHint = document.getElementById("thumbHint");
+  const batchClearBtn = document.getElementById("batchClearBtn");
+  const batchDeleteBtn = document.getElementById("batchDeleteBtn");
+  const selectedThumbLabel = document.getElementById("selectedThumbLabel");
+  let selectedThumbIdx = null;
+
+  // ---- batch point-pair editor state ----
+  // pairPoints[i] = { points1: [...], points2: [...] } for the transition batchImages[i] -> batchImages[i+1]
+  let pairPoints = [];
+  let currentPairIdx = 0;
+  let batchPending = null;
+  let batchDragPanel = null, batchDragIndex = null;
+  let autoCopyForward = false; // once "copy from previous" is used, keep applying it to untouched pairs
+  const batchPointsCard = document.getElementById("batchPointsCard");
+  const batchCanvasA = document.getElementById("batchCanvasA");
+  const batchCanvasB = document.getElementById("batchCanvasB");
+  const batchBoxA = document.getElementById("batchBoxA");
+  const batchBoxB = document.getElementById("batchBoxB");
+  const batchHintA = document.getElementById("batchHintA");
+  const batchHintB = document.getElementById("batchHintB");
+  const batchLabelA = document.getElementById("batchLabelA");
+  const batchLabelB = document.getElementById("batchLabelB");
+  const batchFileNameA = document.getElementById("batchFileNameA");
+  const batchFileNameB = document.getElementById("batchFileNameB");
+  const pairPrevBtn = document.getElementById("pairPrevBtn");
+  const pairNextBtn = document.getElementById("pairNextBtn");
+  const pairLabel = document.getElementById("pairLabel");
+  const batchPointsCount = document.getElementById("batchPointsCount");
+  const batchUndoBtn = document.getElementById("batchUndoBtn");
+  const batchClearPairBtn = document.getElementById("batchClearPairBtn");
+  const batchCopyPrevBtn = document.getElementById("batchCopyPrevBtn");
+
+  // ---- shared export controls ----
+  const holdSlider = document.getElementById("holdSlider");
+  const holdVal = document.getElementById("holdVal");
+  const durationSlider = document.getElementById("durationSlider");
+  const durVal = document.getElementById("durVal");
+  const fpsSlider = document.getElementById("fpsSlider");
+  let videoFormatPref = "mp4";
+  document.querySelectorAll("#formatTabsVideo .mode-tab").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      videoFormatPref = btn.dataset.videofmt;
+      document.querySelectorAll("#formatTabsVideo .mode-tab").forEach((b) => b.classList.toggle("active", b === btn));
+    });
+  });
+  const fpsVal = document.getElementById("fpsVal");
+  const renderActionRow = document.getElementById("renderActionRow");
+  const renderBtn = document.getElementById("renderBtn");
+  const renderBtnText = document.getElementById("renderBtnText");
+  const pngSeqBtn = document.getElementById("pngSeqBtn");
+  const pngSeqBtnText = document.getElementById("pngSeqBtnText");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const cancelBtnText = document.getElementById("cancelBtnText");
+  let renderCancelled = false;
+  function showCancelButton() {
+    renderCancelled = false;
+    cancelBtn.style.display = "inline-flex";
+    cancelBtn.disabled = false;
+    cancelBtnText.textContent = "cancel";
+  }
+  function hideCancelButton() {
+    cancelBtn.style.display = "none";
+  }
+  cancelBtn.addEventListener("click", () => {
+    renderCancelled = true;
+    cancelBtn.disabled = true;
+    cancelBtnText.textContent = "cancelling…";
+  });
+  const statusLine = document.getElementById("statusLine");
+  const zipPartsList = document.getElementById("zipPartsList");
+  let zipPartUrls = []; // revoked at the start of the next export run
+  function clearZipPartsList() {
+    zipPartUrls.forEach((u) => URL.revokeObjectURL(u));
+    zipPartUrls = [];
+    zipPartsList.innerHTML = "";
+    zipPartsList.style.display = "none";
+  }
+  const outputBlock = document.getElementById("outputBlock");
+  const outputVideo = document.getElementById("outputVideo");
+  let lastRenderFps = 30;
+  const downloadLink = document.getElementById("downloadLink");
+  const downloadLabel = document.getElementById("downloadLabel");
+  // ================= theme toggle =================
+  const themeToggleBtn = document.getElementById("themeToggleBtn");
+  const themeToggleIcon = document.getElementById("themeToggleIcon");
+  const themeToggleText = document.getElementById("themeToggleText");
+  const SUN_PATH = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+  const MOON_PATH = '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/>';
+  function currentTheme() {
+    return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+  }
+  function applyThemeIcon() {
+    const t = currentTheme();
+    // Icon shows what you'd switch TO, matching how the format/mode tabs
+    // label an action rather than a state.
+    themeToggleIcon.innerHTML = t === "dark" ? SUN_PATH : MOON_PATH;
+    themeToggleText.textContent = t === "dark" ? "light" : "dark";
+    themeToggleBtn.title = t === "dark" ? "Switch to light theme" : "Switch to dark theme";
+  }
+  function refreshCanvasThemeColors() {
+    // Canvas 2D drawing (point markers) can't see CSS variables directly —
+    // re-read them and redraw whatever's currently visible.
+    ACCENT = cssVar("--accent", "#5ecdc4");
+    ACCENT_B = cssVar("--accent-b", "#e0a458");
+    MARKER_INK = cssVar("--bg", "#101216");
+    if (hasA) redrawA();
+    if (hasB) redrawB();
+    if (mode === "batch" && batchImages.filter(Boolean).length >= 2) { redrawBatchA(); redrawBatchB(); }
+  }
+  themeToggleBtn.addEventListener("click", () => {
+    const next = currentTheme() === "dark" ? "light" : "dark";
+    if (next === "light") document.documentElement.setAttribute("data-theme", "light");
+    else document.documentElement.removeAttribute("data-theme");
+    try { localStorage.setItem("morphlab-theme", next); } catch (e) {}
+    applyThemeIcon();
+    refreshCanvasThemeColors();
+  });
+  applyThemeIcon();
+
+  // Format & export settings — a popout opened from the gear icon, with its
+  // own Format/Export tabs. Closes on outside click, the X, or Escape.
+  const settingsBtn = document.getElementById("settingsBtn");
+  const settingsPopout = document.getElementById("settingsPopout");
+  const settingsCloseBtn = document.getElementById("settingsCloseBtn");
+  const settingsTabFormat = document.getElementById("settingsTabFormat");
+  const settingsTabExport = document.getElementById("settingsTabExport");
+  const settingsFormatPane = document.getElementById("settingsFormatPane");
+  const settingsExportPane = document.getElementById("settingsExportPane");
+  function isSettingsOpen() { return settingsPopout.style.display !== "none"; }
+  function openSettings() { settingsPopout.style.display = "block"; }
+  function closeSettings() { settingsPopout.style.display = "none"; }
+  settingsBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    isSettingsOpen() ? closeSettings() : openSettings();
+  });
+  settingsCloseBtn.addEventListener("click", closeSettings);
+  document.addEventListener("click", (e) => {
+    if (!isSettingsOpen()) return;
+    if (settingsPopout.contains(e.target) || settingsBtn.contains(e.target)) return;
+    closeSettings();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && isSettingsOpen()) closeSettings();
+  });
+  function setSettingsTab(t) {
+    settingsTabFormat.classList.toggle("active", t === "format");
+    settingsTabExport.classList.toggle("active", t === "export");
+    settingsFormatPane.style.display = t === "format" ? "block" : "none";
+    settingsExportPane.style.display = t === "export" ? "block" : "none";
+    try { localStorage.setItem("morphlab-settings-tab", t); } catch (e) {}
+  }
+  settingsTabFormat.addEventListener("click", () => setSettingsTab("format"));
+  settingsTabExport.addEventListener("click", () => setSettingsTab("export"));
+  let initialSettingsTab = "format";
+  try { initialSettingsTab = localStorage.getItem("morphlab-settings-tab") || "format"; } catch (e) {}
+  setSettingsTab(initialSettingsTab);
+
+  // ---- images / rendered view tabs ----
+  const viewTabRendered = document.getElementById("viewTabRendered");
+  const imagesView = document.getElementById("imagesView");
+  const renderedView = document.getElementById("renderedView");
+  const renderedStatusLine = document.getElementById("renderedStatusLine");
+  let activeView = "images";
+  function setView(v) {
+    activeView = v;
+    viewTabImages.classList.toggle("active", v === "images");
+    viewTabRendered.classList.toggle("active", v === "rendered");
+    imagesView.style.display = v === "images" ? "block" : "none";
+    renderedView.style.display = v === "rendered" ? "block" : "none";
+  }
+  viewTabImages.addEventListener("click", () => setView("images"));
+  viewTabRendered.addEventListener("click", () => setView("rendered"));
+  function showRenderedTab() {
+    renderedStatusLine.textContent = statusLine.textContent;
+    viewTabRendered.style.display = "";
+    setView("rendered");
+  }
+  function hideRenderedTab() {
+    viewTabRendered.style.display = "none";
+    if (activeView === "rendered") setView("images");
+  }
+
+  const hiddenOutput = document.getElementById("hiddenOutput");
+  const resolutionLabel = document.getElementById("resolutionLabel");
+  let isRendering = false;
+
+  // ---- crop modal refs ----
+  const cropOverlay = document.getElementById("cropOverlay");
+  const cropCanvas = document.getElementById("cropCanvas");
+  const cropModalTitle = document.getElementById("cropModalTitle");
+  const cropZoomSlider = document.getElementById("cropZoomSlider");
+  const cropResetBtn = document.getElementById("cropResetBtn");
+  const cropCancelBtn = document.getElementById("cropCancelBtn");
+  const cropApplyBtn = document.getElementById("cropApplyBtn");
+
+  // The working canvas size targets either the active format preset's aspect
+  // ratio, or (in "auto") the first uploaded image's own shape. It's capped at
+  // MAX_DIM on the long edge so render time/file size stay sane, and separately
+  // by total area on iOS. Every image is cover-fit (or user-cropped) into
+  // whatever shape is currently active.
+  function dimsForAspectRatio(ar, longestEdge) {
+    let w, h;
+    if (ar >= 1) { w = longestEdge; h = longestEdge / ar; }
+    else { h = longestEdge; w = longestEdge * ar; }
+    return { w: Math.round(w), h: Math.round(h) };
+  }
+  function capDims(w, h) {
+    const longest = Math.max(w, h);
+    let capped = false;
+    if (longest > MAX_DIM) {
+      const scale = MAX_DIM / longest;
+      w = Math.round(w * scale); h = Math.round(h * scale);
+      capped = true;
+    }
+    if (IS_IOS && w * h > IOS_MAX_AREA) {
+      const areaScale = Math.sqrt(IOS_MAX_AREA / (w * h));
+      w = Math.round(w * areaScale); h = Math.round(h * areaScale);
+      capped = true;
+    }
+    return { w, h, capped };
+  }
+  function lockResolution(w, h, capped) {
+    W = w; H = h;
+    resolutionSet = true;
+    BOUNDARY = buildBoundary();
+    const scale = W / 480; // 480 was the original baseline working resolution
+    POINT_RADIUS = Math.round(10 * scale);
+    HIT_RADIUS = Math.round(15 * scale);
+    FONT = "bold " + Math.round(16 * scale) + "px monospace";
+    [canvasA, canvasB, cleanA, cleanB, tempA, tempB, hiddenOutput, batchCanvasA, batchCanvasB].forEach((c) => {
+      c.width = W; c.height = H;
+    });
+    document.documentElement.style.setProperty("--canvas-ar", W + "/" + H);
+    resolutionLabel.textContent = "output " + W + "\u00d7" + H + (capped ? " (capped" + (IS_IOS ? " for iOS" : "") + ")" : "");
+  }
+  function applyResolution(natW, natH) {
+    if (!natW || !natH) return;
+    sourceMaxDim = Math.max(sourceMaxDim, natW, natH);
+    if (firstImageAR === null) firstImageAR = natW / natH;
+    if (resolutionSet) return; // already locked — a later image loading shouldn't drift the shape
+    const ar = forcedAspectRatio || natW / natH;
+    const dims = dimsForAspectRatio(ar, Math.max(natW, natH));
+    const cap = capDims(dims.w, dims.h);
+    lockResolution(cap.w, cap.h, cap.capped);
+  }
+  function hasUnsavedPoints() {
+    return points1.length > 0 || pairPoints.some((p) => p.points1.length > 0);
+  }
+  function applyFormatChange(formatId) {
+    if (formatId === activeFormat) return;
+    if (hasUnsavedPoints()) {
+      const proceed = confirm(
+        "Changing format re-crops everything to the new shape, which clears your point pairs — " +
+        "they're tied to pixel positions in the current canvas size.\n\nContinue and clear them?"
+      );
+      if (!proceed) return;
+    }
+    activeFormat = formatId;
+    forcedAspectRatio = FORMAT_PRESETS[formatId];
+    document.querySelectorAll("#formatTabs .mode-tab").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.format === formatId);
+    });
+    points1 = []; points2 = []; pending = null;
+    pairPoints.forEach((p) => { p.points1 = []; p.points2 = []; });
+
+    if (!sourceMaxDim) return; // nothing uploaded yet — the choice takes effect on first upload
+
+    const ar = forcedAspectRatio || firstImageAR || 1;
+    const dims = dimsForAspectRatio(ar, sourceMaxDim);
+    const cap = capDims(dims.w, dims.h);
+    resolutionSet = false;
+    lockResolution(cap.w, cap.h, cap.capped);
+
+    if (hasA && imgElA) { cropRectA = computeCoverRect(imgElA.naturalWidth, imgElA.naturalHeight, W, H); drawCropRect(imgElA, cleanA, cropRectA); }
+    if (hasB && imgElB) { cropRectB = computeCoverRect(imgElB.naturalWidth, imgElB.naturalHeight, W, H); drawCropRect(imgElB, cleanB, cropRectB); }
+    redrawA(); redrawB();
+    updateSingleUI();
+
+    if (batchImages.length) {
+      batchImages = batchImages.map((c) => {
+        if (!c) return c;
+        const resized = document.createElement("canvas");
+        resized.width = W; resized.height = H;
+        coverDraw(c, resized); // an existing canvas is a valid drawImage source
+        return resized;
+      });
+      document.querySelectorAll("#thumbStrip .thumb canvas").forEach((mini, idx) => {
+        if (!batchImages[idx]) return;
+        mini.width = W; mini.height = H;
+        mini.getContext("2d").drawImage(batchImages[idx], 0, 0);
+      });
+      if (pairPoints.length) renderBatchPairCanvases();
+    }
+  }
+  document.querySelectorAll("#formatTabs .mode-tab").forEach((btn) => {
+    btn.addEventListener("click", () => applyFormatChange(btn.dataset.format));
+  });
+
+  holdSlider.addEventListener("input", () => (holdVal.textContent = parseFloat(holdSlider.value).toFixed(1)));
+  durationSlider.addEventListener("input", () => (durVal.textContent = parseFloat(durationSlider.value).toFixed(1)));
+  fpsSlider.addEventListener("input", () => (fpsVal.textContent = fpsSlider.value));
+
+  // ================= geometry / warp math (Canvas2D) =================
+  // Safari has a system-level WebGL problem that nothing in this page can
+  // fix (confirmed independently via get.webgl.org failing identically) —
+  // this file renders with plain per-triangle Canvas2D affine transforms
+  // instead of the WebGL mesh, so it works regardless. The tradeoff is the
+  // faint seam artifacts between triangles that the WebGL version fixed;
+  // an overscan factor keeps them minimal.
+  function det3(m) {
+    return m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1])
+         - m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0])
+         + m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+  }
+  function replaceCol(m, col, vec) {
+    return m.map((row, i) => row.map((v, j) => (j === col ? vec[i] : v)));
+  }
+  function solveAffine(src, dst) {
+    const A = [[src[0].x, src[0].y, 1], [src[1].x, src[1].y, 1], [src[2].x, src[2].y, 1]];
+    const detA = det3(A);
+    if (Math.abs(detA) < 1e-8) return null;
+    const uVec = [dst[0].x, dst[1].x, dst[2].x];
+    const vVec = [dst[0].y, dst[1].y, dst[2].y];
+    return {
+      a: det3(replaceCol(A, 0, uVec)) / detA, b: det3(replaceCol(A, 1, uVec)) / detA, c: det3(replaceCol(A, 2, uVec)) / detA,
+      d: det3(replaceCol(A, 0, vVec)) / detA, e: det3(replaceCol(A, 1, vVec)) / detA, f: det3(replaceCol(A, 2, vVec)) / detA,
+    };
+  }
+  function lerpPts(p1, p2, t) {
+    return p1.map((p, i) => ({ x: p.x + (p2[i].x - p.x) * t, y: p.y + (p2[i].y - p.y) * t }));
+  }
+  function drawWarpedTriangle(ctx, sourceCanvas, srcTri, dstTri) {
+    const cx = (dstTri[0].x + dstTri[1].x + dstTri[2].x) / 3;
+    const cy = (dstTri[0].y + dstTri[1].y + dstTri[2].y) / 3;
+    const ex = dstTri.map(p => ({ x: cx + (p.x - cx) * 1.016, y: cy + (p.y - cy) * 1.016 }));
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.beginPath();
+    ctx.moveTo(ex[0].x, ex[0].y); ctx.lineTo(ex[1].x, ex[1].y); ctx.lineTo(ex[2].x, ex[2].y);
+    ctx.closePath(); ctx.clip();
+    const m = solveAffine(srcTri, dstTri);
+    if (m) { ctx.setTransform(m.a, m.d, m.b, m.e, m.c, m.f); ctx.drawImage(sourceCanvas, 0, 0); }
+    ctx.restore();
+  }
+  // sourceA/sourceB are the two source canvases being morphed between (explicit,
+  // so this same function serves single mode and every batch transition pair).
+  function drawMorphFrameTriangulated(outCtx, t, all1, all2, triangles, sourceA, sourceB) {
+    const interp = lerpPts(all1, all2, t);
+    const ctxA = tempA.getContext("2d"), ctxB = tempB.getContext("2d");
+    ctxA.setTransform(1,0,0,1,0,0); ctxB.setTransform(1,0,0,1,0,0);
+    ctxA.clearRect(0,0,W,H); ctxB.clearRect(0,0,W,H);
+    for (let i = 0; i < triangles.length; i += 3) {
+      const ia = triangles[i], ib = triangles[i+1], ic = triangles[i+2];
+      const dstTri = [interp[ia], interp[ib], interp[ic]];
+      drawWarpedTriangle(ctxA, sourceA, [all1[ia], all1[ib], all1[ic]], dstTri);
+      drawWarpedTriangle(ctxB, sourceB, [all2[ia], all2[ib], all2[ic]], dstTri);
+    }
+    outCtx.setTransform(1,0,0,1,0,0); outCtx.clearRect(0,0,W,H);
+    outCtx.globalAlpha = 1; outCtx.drawImage(tempA, 0, 0);
+    outCtx.globalAlpha = t; outCtx.drawImage(tempB, 0, 0);
+    outCtx.globalAlpha = 1;
+  }
+  // Boundary points are always included, so an empty pointsA/pointsB pair
+  // degenerates to a plain cross-dissolve (identity warp on a fixed frame).
+  function computeTriangulation(pointsA, pointsB) {
+    const all1 = [...BOUNDARY, ...pointsA];
+    const all2 = [...BOUNDARY, ...pointsB];
+    const mid = all1.map((p, i) => ({ x: (p.x + all2[i].x) / 2, y: (p.y + all2[i].y) / 2 }));
+    const delaunay = d3.Delaunay.from(mid.map(p => [p.x, p.y]));
+    return { all1, all2, triangles: delaunay.triangles };
+  }
+  function getTriangulation() {
+    return computeTriangulation(points1, points2);
+  }
+
+  // ================= single-mode image loading =================
+  // Cover-fit is now "compute a rect, then draw it" so the same rect can later
+  // be overridden by a user-chosen crop instead of always being auto-centered.
+  function computeCoverRect(imgW, imgH, targetW, targetH) {
+    const scale = Math.max(targetW / imgW, targetH / imgH);
+    const sw = targetW / scale, sh = targetH / scale;
+    return { sx: (imgW - sw) / 2, sy: (imgH - sh) / 2, sw, sh };
+  }
+  function drawCropRect(img, canvas, rect) {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, rect.sx, rect.sy, rect.sw, rect.sh, 0, 0, canvas.width, canvas.height);
+  }
+  function coverDraw(img, canvas) {
+    drawCropRect(img, canvas, computeCoverRect(img.width, img.height, canvas.width, canvas.height));
+  }
+
+  let imgElA = null, imgElB = null; // retained so the crop tool can re-sample at full quality
+  let cropRectA = null, cropRectB = null; // current crop, in each image's own natural pixel coords
+
+  function loadSingleImage(file, cleanCanvas, isA) {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      applyResolution(img.naturalWidth, img.naturalHeight);
+      const rect = computeCoverRect(img.naturalWidth, img.naturalHeight, W, H);
+      drawCropRect(img, cleanCanvas, rect);
+      if (isA) {
+        imgElA = img; cropRectA = rect; hasA = true;
+        document.getElementById("dropA").style.display = "none";
+        document.getElementById("replaceA").style.display = "inline-flex";
+        document.getElementById("cropA").style.display = "inline-flex";
+      } else {
+        imgElB = img; cropRectB = rect; hasB = true;
+        document.getElementById("dropB").style.display = "none";
+        document.getElementById("replaceB").style.display = "inline-flex";
+        document.getElementById("cropB").style.display = "inline-flex";
+      }
+      redrawA(); redrawB();
+      updateSingleUI();
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
+  }
+
+  // ================= crop tool =================
+  const CROP_MIN_SCALE = 0.2; // how far the zoom slider can shrink the box (20% of the fully-zoomed-out size)
+  const CROP_MAX_SCALE = 3; // how far the zoom slider can grow the box past the image (zooming out, with padding)
+  const CROP_HANDLE_HIT = 16; // canvas-internal pixels — generous hit area around each corner
+  let cropTarget = null; // 'A' | 'B'
+  let cropImg = null, cropNatW = 0, cropNatH = 0;
+  let cropMaxBoxW = 0, cropMaxBoxH = 0; // largest on-aspect box that fits the image (zoom = 0)
+  let cropBoxW = 0, cropBoxH = 0;
+  let cropBoxCenter = { x: 0, y: 0 }; // natural image coords
+  let cropDisplayScale = 1, cropOffsetX = 0, cropOffsetY = 0; // modal canvas <-> natural coords
+  let cropDragging = false, cropDragStart = null, cropCenterAtDragStart = null;
+  let cropResizing = false, cropResizeAnchor = null, cropResizeSign = null;
+  let cropInitial = null; // snapshot taken on open, to detect unsaved changes for the Esc prompt
+
+  function cropBoxSizeForZoom(zoomVal) {
+    // zoomVal > 0 zooms in (box shrinks below the image-fit size); zoomVal < 0
+    // zooms out (box grows past the image-fit size, so the source rect extends
+    // beyond the image's own bounds — drawImage leaves that area transparent,
+    // which is exactly the "padding" look zooming out should have).
+    const scale = zoomVal >= 0
+      ? 1 - zoomVal * (1 - CROP_MIN_SCALE)
+      : 1 + (-zoomVal) * (CROP_MAX_SCALE - 1);
+    return { w: cropMaxBoxW * scale, h: cropMaxBoxH * scale };
+  }
+  function clampCropCenter() {
+    const halfW = cropBoxW / 2, halfH = cropBoxH / 2;
+    // Once the box is wider/taller than the image on an axis, there's no
+    // meaningful room left to pan on that axis — center it instead of letting
+    // clamp() invert (min > max) and misbehave.
+    cropBoxCenter.x = halfW * 2 >= cropNatW ? cropNatW / 2 : clamp(cropBoxCenter.x, halfW, cropNatW - halfW);
+    cropBoxCenter.y = halfH * 2 >= cropNatH ? cropNatH / 2 : clamp(cropBoxCenter.y, halfH, cropNatH - halfH);
+  }
+  function syncZoomSliderToBox() {
+    const scale = clamp(cropBoxW / cropMaxBoxW, CROP_MIN_SCALE, CROP_MAX_SCALE);
+    cropZoomSlider.value = scale <= 1
+      ? (1 - scale) / (1 - CROP_MIN_SCALE)
+      : -(scale - 1) / (CROP_MAX_SCALE - 1);
+  }
+  function isCropModified() {
+    if (!cropInitial) return false;
+    return Math.abs(cropBoxW - cropInitial.w) > 0.5 || Math.abs(cropBoxH - cropInitial.h) > 0.5 ||
+      Math.abs(cropBoxCenter.x - cropInitial.cx) > 0.5 || Math.abs(cropBoxCenter.y - cropInitial.cy) > 0.5;
+  }
+  function openCropModal(which) {
+    const img = which === "A" ? imgElA : imgElB;
+    const rect = which === "A" ? cropRectA : cropRectB;
+    if (!img || !rect) return;
+    cropTarget = which;
+    cropImg = img;
+    cropNatW = img.naturalWidth; cropNatH = img.naturalHeight;
+    const ar = W / H;
+    if (cropNatW / cropNatH > ar) { cropMaxBoxH = cropNatH; cropMaxBoxW = cropNatH * ar; }
+    else { cropMaxBoxW = cropNatW; cropMaxBoxH = cropNatW / ar; }
+    cropBoxW = Math.min(rect.sw, cropMaxBoxW);
+    cropBoxH = Math.min(rect.sh, cropMaxBoxH);
+    cropBoxCenter = { x: rect.sx + rect.sw / 2, y: rect.sy + rect.sh / 2 };
+    clampCropCenter();
+    syncZoomSliderToBox();
+    cropInitial = { w: cropBoxW, h: cropBoxH, cx: cropBoxCenter.x, cy: cropBoxCenter.y };
+    cropModalTitle.textContent = which === "A" ? "crop — start" : "crop — end";
+    cropOverlay.style.display = "flex";
+    drawCropModal();
+  }
+  function closeCropModal() {
+    cropOverlay.style.display = "none";
+    cropTarget = null;
+    cropInitial = null;
+  }
+  function applyCrop() {
+    const rect = { sx: cropBoxCenter.x - cropBoxW / 2, sy: cropBoxCenter.y - cropBoxH / 2, sw: cropBoxW, sh: cropBoxH };
+    if (cropTarget === "A") { cropRectA = rect; drawCropRect(imgElA, cleanA, rect); redrawA(); }
+    else if (cropTarget === "B") { cropRectB = rect; drawCropRect(imgElB, cleanB, rect); redrawB(); }
+    closeCropModal();
+  }
+  function drawCropModal() {
+    const ctx = cropCanvas.getContext("2d");
+    const CW = cropCanvas.width, CH = cropCanvas.height;
+    const scale = Math.min(CW / cropNatW, CH / cropNatH);
+    const dispW = cropNatW * scale, dispH = cropNatH * scale;
+    const offX = (CW - dispW) / 2, offY = (CH - dispH) / 2;
+    cropDisplayScale = scale; cropOffsetX = offX; cropOffsetY = offY;
+
+    ctx.clearRect(0, 0, CW, CH);
+    ctx.drawImage(cropImg, offX, offY, dispW, dispH);
+    ctx.fillStyle = "rgba(10,11,13,0.68)";
+    ctx.fillRect(0, 0, CW, CH);
+
+    const bx = offX + cropBoxCenter.x * scale - (cropBoxW * scale) / 2;
+    const by = offY + cropBoxCenter.y * scale - (cropBoxH * scale) / 2;
+    const bw = cropBoxW * scale, bh = cropBoxH * scale;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(bx, by, bw, bh);
+    ctx.clip();
+    ctx.drawImage(cropImg, offX, offY, dispW, dispH);
+    ctx.restore();
+
+    ctx.strokeStyle = ACCENT;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(bx, by, bw, bh);
+    ctx.fillStyle = ACCENT;
+    const hs = 9;
+    [[bx, by], [bx + bw, by], [bx, by + bh], [bx + bw, by + bh]].forEach(([x, y]) => {
+      ctx.fillRect(x - hs / 2, y - hs / 2, hs, hs);
+    });
+  }
+  function cropCanvasCoords(e) {
+    const rect = cropCanvas.getBoundingClientRect();
+    const factor = cropCanvas.width / rect.width;
+    return { x: (e.clientX - rect.left) * factor, y: (e.clientY - rect.top) * factor };
+  }
+  function cropBoxScreenCorners() {
+    const bx = cropOffsetX + cropBoxCenter.x * cropDisplayScale - (cropBoxW * cropDisplayScale) / 2;
+    const by = cropOffsetY + cropBoxCenter.y * cropDisplayScale - (cropBoxH * cropDisplayScale) / 2;
+    const bw = cropBoxW * cropDisplayScale, bh = cropBoxH * cropDisplayScale;
+    return { tl: { x: bx, y: by }, tr: { x: bx + bw, y: by }, bl: { x: bx, y: by + bh }, br: { x: bx + bw, y: by + bh } };
+  }
+  const CROP_OPPOSITE = { tl: "br", tr: "bl", bl: "tr", br: "tl" };
+  const CROP_SIGN = { tl: { x: -1, y: -1 }, tr: { x: 1, y: -1 }, bl: { x: -1, y: 1 }, br: { x: 1, y: 1 } };
+
+  cropCanvas.addEventListener("pointerdown", (e) => {
+    const p = cropCanvasCoords(e);
+    const corners = cropBoxScreenCorners();
+    let hitHandle = null;
+    for (const key in corners) {
+      if (Math.hypot(p.x - corners[key].x, p.y - corners[key].y) <= CROP_HANDLE_HIT) { hitHandle = key; break; }
+    }
+    if (hitHandle) {
+      // Resize from this corner: the OPPOSITE corner stays fixed as the anchor,
+      // and the box grows/shrinks toward the pointer while keeping the output's
+      // aspect ratio locked. This works immediately regardless of current zoom —
+      // it no longer depends on there being pan "slack" left over from the slider.
+      cropResizing = true;
+      const opp = corners[CROP_OPPOSITE[hitHandle]];
+      cropResizeAnchor = { x: (opp.x - cropOffsetX) / cropDisplayScale, y: (opp.y - cropOffsetY) / cropDisplayScale };
+      cropResizeSign = CROP_SIGN[hitHandle];
+      cropCanvas.setPointerCapture(e.pointerId);
+      return;
+    }
+    cropDragging = true;
+    cropDragStart = p;
+    cropCenterAtDragStart = { x: cropBoxCenter.x, y: cropBoxCenter.y };
+    cropCanvas.setPointerCapture(e.pointerId);
+  });
+  cropCanvas.addEventListener("pointermove", (e) => {
+    const p = cropCanvasCoords(e);
+    if (cropResizing) {
+      const pNatX = (p.x - cropOffsetX) / cropDisplayScale;
+      const pNatY = (p.y - cropOffsetY) / cropDisplayScale;
+      const ar = W / H;
+      const rawW = Math.abs(pNatX - cropResizeAnchor.x);
+      const rawH = Math.abs(pNatY - cropResizeAnchor.y);
+      let candW = Math.max(rawW, rawH * ar);
+      const scale = clamp(candW / cropMaxBoxW, CROP_MIN_SCALE, CROP_MAX_SCALE);
+      cropBoxW = cropMaxBoxW * scale;
+      cropBoxH = cropMaxBoxH * scale;
+      cropBoxCenter = {
+        x: cropResizeAnchor.x + cropResizeSign.x * cropBoxW / 2,
+        y: cropResizeAnchor.y + cropResizeSign.y * cropBoxH / 2,
+      };
+      clampCropCenter();
+      syncZoomSliderToBox();
+      drawCropModal();
+      return;
+    }
+    if (!cropDragging) return;
+    const dxNat = (p.x - cropDragStart.x) / cropDisplayScale;
+    const dyNat = (p.y - cropDragStart.y) / cropDisplayScale;
+    cropBoxCenter = { x: cropCenterAtDragStart.x + dxNat, y: cropCenterAtDragStart.y + dyNat };
+    clampCropCenter();
+    drawCropModal();
+  });
+  cropCanvas.addEventListener("pointerup", () => { cropDragging = false; cropResizing = false; });
+  cropZoomSlider.addEventListener("input", () => {
+    const size = cropBoxSizeForZoom(parseFloat(cropZoomSlider.value));
+    cropBoxW = size.w; cropBoxH = size.h;
+    clampCropCenter();
+    drawCropModal();
+  });
+  cropResetBtn.addEventListener("click", () => {
+    cropZoomSlider.value = 0;
+    const size = cropBoxSizeForZoom(0);
+    cropBoxW = size.w; cropBoxH = size.h;
+    cropBoxCenter = { x: cropNatW / 2, y: cropNatH / 2 };
+    clampCropCenter();
+    drawCropModal();
+  });
+  cropCancelBtn.addEventListener("click", closeCropModal);
+  cropOverlay.addEventListener("click", (e) => { if (e.target === cropOverlay) closeCropModal(); });
+  cropApplyBtn.addEventListener("click", applyCrop);
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape" || cropOverlay.style.display === "none") return;
+    if (isCropModified()) {
+      const save = confirm("You've changed this crop.\n\nOK — save the crop\nCancel — discard changes and close");
+      if (save) applyCrop(); else closeCropModal();
+    } else {
+      closeCropModal();
+    }
+  });
+  document.getElementById("cropA").addEventListener("click", () => openCropModal("A"));
+  document.getElementById("cropB").addEventListener("click", () => openCropModal("B"));
+
+  // ================= face landmark auto-detection =================
+  // Curated ~40-point subset of MediaPipe's 478-point canonical face mesh
+  // (eyes, eyebrows, nose, mouth, jaw/face-outline, iris centers). These
+  // indices follow the standard, widely-documented MediaPipe FaceMesh
+  // topology — the same numbers appear consistently across MediaPipe's own
+  // examples and virtually every third-party integration, since the mesh
+  // topology is fixed by the model itself. A handful (nose tip, both outer
+  // eye corners, both mouth corners) were spot-verified directly against
+  // real detection output during development. Every point this produces is
+  // just as draggable/correctable afterward as a manually-placed one, so an
+  // imperfect index for a given photo is a minor nudge, not a blocker.
+  const FACE_LANDMARK_INDICES = [
+    10, 338, 297, 284, 454, 288, 397, 152, 172, 58, 234, 127, // face oval / jaw (12)
+    70, 105, 107, 300, 334, 336,                               // eyebrows (6)
+    33, 160, 133, 144, 263, 387, 362, 373,                     // eyes (8)
+    168, 1, 98, 327,                                           // nose bridge/tip/nostrils (4)
+    61, 37, 0, 291, 314, 17,                                   // mouth outer (6)
+    468, 473,                                                  // iris centers (2)
+    149, 378,                                                  // extra jaw symmetry (2)
+  ];
+  let faceModeOn = false;
+  const batchFaceLandmarksCache = new Map(); // canvas -> {x,y}[] in pixel coords, or null if no face found
+
+  const faceModeStatus = document.getElementById("faceModeStatus");
+  const faceModeHelp = document.getElementById("faceModeHelp");
+  const detectFacesBtn = document.getElementById("detectFacesBtn");
+  const detectFacesBtnText = document.getElementById("detectFacesBtnText");
+  const batchDetectFacesBtn = document.getElementById("batchDetectFacesBtn");
+  const batchDetectFacesBtnText = document.getElementById("batchDetectFacesBtnText");
+
+  async function detectFacePoints(canvas) {
+    const landmarker = await window.__faceLandmarkerReady;
+    const result = landmarker.detect(canvas);
+    if (!result.faceLandmarks || result.faceLandmarks.length === 0) return null;
+    const face = result.faceLandmarks[0];
+    return FACE_LANDMARK_INDICES.map((i) => ({ x: face[i].x * W, y: face[i].y * H }));
+  }
+
+  async function runFaceDetectSingle(skipConfirm) {
+    if (!hasA || !hasB) return;
+    if (!skipConfirm && points1.length > 0) {
+      if (!confirm("Replace the current point pairs with auto-detected face landmarks?")) return;
+    }
+    detectFacesBtn.disabled = true;
+    detectFacesBtnText.textContent = "detecting…";
+    faceModeStatus.textContent = "detecting…";
+    try {
+      const [ptsA, ptsB] = await Promise.all([detectFacePoints(cleanA), detectFacePoints(cleanB)]);
+      if (!ptsA || !ptsB) {
+        const missing = !ptsA && !ptsB ? "either image" : !ptsA ? '"start"' : '"end"';
+        faceModeStatus.textContent = "no face found in " + missing + " — place points manually instead";
+      } else {
+        points1 = ptsA; points2 = ptsB; pending = null;
+        redrawA(); redrawB(); updateSingleUI();
+        faceModeStatus.textContent = "ready — " + ptsA.length + " points placed, drag any to adjust";
+      }
+    } catch (err) {
+      faceModeStatus.textContent = "face detection unavailable: " + (err && err.message ? err.message : "see console");
+      console.error(err);
+    }
+    detectFacesBtn.disabled = false;
+    detectFacesBtnText.textContent = "detect faces";
+  }
+
+  async function getBatchFaceLandmarks(canvas) {
+    if (batchFaceLandmarksCache.has(canvas)) return batchFaceLandmarksCache.get(canvas);
+    const pts = await detectFacePoints(canvas);
+    batchFaceLandmarksCache.set(canvas, pts);
+    return pts;
+  }
+
+  async function runFaceDetectBatchPair(skipConfirm) {
+    const imgs = batchImages.filter(Boolean);
+    if (imgs.length < 2 || !pairPoints[currentPairIdx]) return;
+    const pair = currentPair();
+    if (!skipConfirm && pair.points1.length > 0) {
+      if (!confirm("Replace this transition's point pairs with auto-detected face landmarks?")) return;
+    }
+    batchDetectFacesBtn.disabled = true;
+    batchDetectFacesBtnText.textContent = "detecting…";
+    try {
+      const [ptsA, ptsB] = await Promise.all([
+        getBatchFaceLandmarks(imgs[currentPairIdx]),
+        getBatchFaceLandmarks(imgs[currentPairIdx + 1]),
+      ]);
+      if (!ptsA || !ptsB) {
+        const missing = !ptsA && !ptsB ? "either image" : !ptsA ? "image " + (currentPairIdx + 1) : "image " + (currentPairIdx + 2);
+        faceModeStatus.textContent = "no face found in " + missing + " — place points manually instead";
+      } else {
+        pair.points1 = ptsA.map((p) => ({ x: p.x, y: p.y }));
+        pair.points2 = ptsB.map((p) => ({ x: p.x, y: p.y }));
+        batchPending = null;
+        redrawBatchA(); redrawBatchB(); updateBatchPointsUI();
+        faceModeStatus.textContent = "ready — " + ptsA.length + " points placed, drag any to adjust";
+      }
+    } catch (err) {
+      faceModeStatus.textContent = "face detection unavailable: " + (err && err.message ? err.message : "see console");
+      console.error(err);
+    }
+    batchDetectFacesBtn.disabled = false;
+    batchDetectFacesBtnText.textContent = "detect faces";
+  }
+
+  document.querySelectorAll("#faceModeTabs .mode-tab").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      faceModeOn = btn.dataset.facemode === "on";
+      document.querySelectorAll("#faceModeTabs .mode-tab").forEach((b) => b.classList.toggle("active", b === btn));
+      faceModeHelp.style.display = faceModeOn ? "block" : "none";
+      detectFacesBtn.style.display = faceModeOn ? "inline-flex" : "none";
+      batchDetectFacesBtn.style.display = faceModeOn ? "inline-flex" : "none";
+      if (!faceModeOn) { faceModeStatus.textContent = ""; return; }
+      faceModeStatus.textContent = "loading detector…";
+      window.__faceLandmarkerReady.then(() => {
+        faceModeStatus.textContent = "ready";
+        if (mode === "single" && hasA && hasB && points1.length === 0) runFaceDetectSingle(true);
+        if (mode === "batch" && pairPoints[currentPairIdx] && currentPair().points1.length === 0) runFaceDetectBatchPair(true);
+      }).catch((err) => {
+        faceModeStatus.textContent = "unavailable: " + (err && err.message ? err.message : "see console");
+      });
+    });
+  });
+  detectFacesBtn.addEventListener("click", () => runFaceDetectSingle(false));
+  batchDetectFacesBtn.addEventListener("click", () => runFaceDetectBatchPair(false));
+
+  function drawMarker(ctx, p, index, style) {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, POINT_RADIUS, 0, Math.PI * 2);
+    ctx.fillStyle = style === "pending" ? ACCENT_B : ACCENT;
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = MARKER_INK;
+    ctx.stroke();
+    ctx.fillStyle = MARKER_INK;
+    ctx.font = FONT;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(String(index), p.x, p.y);
+  }
+  function redrawA() {
+    if (!hasA) return;
+    const ctx = canvasA.getContext("2d");
+    ctx.clearRect(0, 0, W, H);
+    ctx.drawImage(cleanA, 0, 0);
+    points1.forEach((p, i) => drawMarker(ctx, p, i + 1, "normal"));
+    if (pending) drawMarker(ctx, pending, points1.length + 1, "pending");
+  }
+  function redrawB() {
+    if (!hasB) return;
+    const ctx = canvasB.getContext("2d");
+    ctx.clearRect(0, 0, W, H);
+    ctx.drawImage(cleanB, 0, 0);
+    points2.forEach((p, i) => drawMarker(ctx, p, i + 1, "normal"));
+  }
+
+  function updateSingleUI() {
+    const ready = hasA && hasB;
+    pointsRow.style.display = ready ? "flex" : "none";
+    preHelp.style.display = ready ? "block" : "none";
+    pointsCount.innerHTML = points1.length + " point pair" + (points1.length === 1 ? "" : "s") + " marked" +
+      (pending ? ' <span class="hint-b">— click the same spot on "end"</span>' : "");
+    undoBtn.disabled = points1.length === 0 && !pending;
+    clearBtn.disabled = points1.length === 0;
+    hintA.textContent = (!pending && hasA) ? "click, or drag a point" : "";
+    hintB.textContent = pending ? "click here" : (hasB ? "drag to adjust" : "");
+    boxA.className = "canvas-box" + (!pending && hasA ? " awaiting-a" : "");
+    boxB.className = "canvas-box" + (pending ? " awaiting-b" : "");
+    updateRenderEnabled();
+  }
+
+  function canvasCoords(e, canvas) {
+    const rect = canvas.getBoundingClientRect();
+    return { x: ((e.clientX - rect.left) / rect.width) * W, y: ((e.clientY - rect.top) / rect.height) * H };
+  }
+  function findHit(list, p) {
+    for (let i = 0; i < list.length; i++) {
+      const dx = list[i].x - p.x, dy = list[i].y - p.y;
+      if (Math.sqrt(dx * dx + dy * dy) <= HIT_RADIUS) return i;
+    }
+    return -1;
+  }
+
+  canvasA.addEventListener("pointerdown", (e) => {
+    if (!hasA) return;
+    const p = canvasCoords(e, canvasA);
+    if (pending) { pending = p; redrawA(); return; } // reposition pending before confirming
+    const hit = findHit(points1, p);
+    if (hit !== -1) {
+      dragPanel = "A"; dragIndex = hit; dragMoved = false;
+      canvasA.setPointerCapture(e.pointerId);
+      return;
+    }
+    pending = p;
+    redrawA();
+    updateSingleUI();
+  });
+  canvasA.addEventListener("pointermove", (e) => {
+    if (dragPanel !== "A" || dragIndex === null) return;
+    dragMoved = true;
+    points1[dragIndex] = canvasCoords(e, canvasA);
+    redrawA();
+  });
+  canvasA.addEventListener("pointerup", () => { dragPanel = null; dragIndex = null; dragMoved = false; });
+
+  canvasB.addEventListener("pointerdown", (e) => {
+    if (!hasB) return;
+    const p = canvasCoords(e, canvasB);
+    if (pending) {
+      points1.push(pending); points2.push(p); pending = null;
+      redrawA(); redrawB(); updateSingleUI();
+      return;
+    }
+    const hit = findHit(points2, p);
+    if (hit !== -1) {
+      dragPanel = "B"; dragIndex = hit; dragMoved = false;
+      canvasB.setPointerCapture(e.pointerId);
+    }
+  });
+  canvasB.addEventListener("pointermove", (e) => {
+    if (dragPanel !== "B" || dragIndex === null) return;
+    dragMoved = true;
+    points2[dragIndex] = canvasCoords(e, canvasB);
+    redrawB();
+  });
+  canvasB.addEventListener("pointerup", () => { dragPanel = null; dragIndex = null; dragMoved = false; });
+
+  undoBtn.addEventListener("click", () => {
+    if (pending) { pending = null; }
+    else { points1.pop(); points2.pop(); }
+    redrawA(); redrawB(); updateSingleUI();
+  });
+  clearBtn.addEventListener("click", () => {
+    points1 = []; points2 = []; pending = null;
+    redrawA(); redrawB(); updateSingleUI();
+  });
+  document.getElementById("fileA").addEventListener("change", (e) => e.target.files[0] && loadSingleImage(e.target.files[0], cleanA, true));
+  document.getElementById("fileB").addEventListener("change", (e) => e.target.files[0] && loadSingleImage(e.target.files[0], cleanB, false));
+  document.getElementById("replaceA").addEventListener("click", () => document.getElementById("fileA").click());
+  document.getElementById("replaceB").addEventListener("click", () => document.getElementById("fileB").click());
+
+  // ================= batch mode =================
+  function naturalSort(a, b) {
+    return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" });
+  }
+  function traverseEntry(entry, files) {
+    return new Promise((resolve) => {
+      if (entry.isFile) {
+        entry.file((f) => { files.push(f); resolve(); });
+      } else if (entry.isDirectory) {
+        const reader = entry.createReader();
+        reader.readEntries(async (entries) => {
+          for (const e2 of entries) await traverseEntry(e2, files);
+          resolve();
+        });
+      } else resolve();
+    });
+  }
+  function loadImageElement(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+  async function handleBatchFiles(fileList) {
+    let files = Array.from(fileList).filter((f) => /image\/(jpeg|png)/.test(f.type));
+    files.sort(naturalSort);
+    let truncated = false;
+    if (files.length > MAX_BATCH) { files = files.slice(0, MAX_BATCH); truncated = true; }
+    if (files.length === 0) return;
+
+    // Lock the working resolution from the first file in sequence order,
+    // before any canvas gets created, so sizing is deterministic regardless
+    // of which file happens to finish decoding first.
+    if (!resolutionSet) {
+      try {
+        const firstImg = await loadImageElement(files[0]);
+        applyResolution(firstImg.naturalWidth, firstImg.naturalHeight);
+      } catch (e) { /* fall through with the current default resolution */ }
+    }
+
+    batchImages = new Array(files.length);
+    thumbStrip.innerHTML = "";
+    const thumbEls = new Array(files.length);
+    files.forEach((f, idx) => {
+      const c = document.createElement("canvas"); c.width = W; c.height = H;
+      c.dataset.filename = f.name;
+      const img = new Image();
+      const url = URL.createObjectURL(f);
+      const wrap = document.createElement("div");
+      wrap.className = "thumb";
+      thumbStrip.appendChild(wrap);
+      thumbEls[idx] = wrap;
+      img.onload = () => {
+        coverDraw(img, c);
+        batchImages[idx] = c;
+        const mini = document.createElement("canvas");
+        mini.width = W; mini.height = H;
+        mini.getContext("2d").drawImage(c, 0, 0);
+        wrap.innerHTML = "";
+        wrap.appendChild(mini);
+        const tag = document.createElement("span");
+        tag.className = "idx mono";
+        tag.textContent = idx + 1;
+        wrap.appendChild(tag);
+        URL.revokeObjectURL(url);
+        refreshBatchMeta(files.length, truncated);
+      };
+      img.src = url;
+      wrap.addEventListener("click", () => {
+        selectThumb(idx);
+        if (!batchPointsCard || batchPointsCard.style.display === "none") return;
+        const imgs = batchImages.filter(Boolean);
+        currentPairIdx = Math.max(0, Math.min(idx, imgs.length - 2));
+        renderBatchPairCanvases();
+      });
+    });
+  }
+  function selectThumb(idx) {
+    selectedThumbIdx = idx;
+    updateThumbSelectionUI();
+  }
+  function updateThumbSelectionUI() {
+    document.querySelectorAll("#thumbStrip .thumb").forEach((el, i) => {
+      el.classList.toggle("selected", i === selectedThumbIdx);
+    });
+    batchDeleteBtn.disabled = selectedThumbIdx === null;
+    selectedThumbLabel.textContent = selectedThumbIdx === null
+      ? "click a thumbnail to select it"
+      : "image " + (selectedThumbIdx + 1) + " selected";
+  }
+  let dragSrcIdx = null;
+  function buildThumbEl(idx, canvas) {
+    const wrap = document.createElement("div");
+    wrap.className = "thumb";
+    wrap.draggable = true;
+    const mini = document.createElement("canvas");
+    mini.width = W; mini.height = H;
+    mini.getContext("2d").drawImage(canvas, 0, 0);
+    wrap.appendChild(mini);
+    const tag = document.createElement("span");
+    tag.className = "idx mono";
+    tag.textContent = idx + 1;
+    wrap.appendChild(tag);
+    wrap.addEventListener("click", () => {
+      selectThumb(idx);
+      if (!batchPointsCard || batchPointsCard.style.display === "none") return;
+      const imgs = batchImages.filter(Boolean);
+      currentPairIdx = Math.max(0, Math.min(idx, imgs.length - 2));
+      renderBatchPairCanvases();
+    });
+    wrap.addEventListener("dragstart", (e) => {
+      dragSrcIdx = idx;
+      wrap.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", String(idx));
+    });
+    wrap.addEventListener("dragend", () => {
+      dragSrcIdx = null;
+      document.querySelectorAll("#thumbStrip .thumb").forEach((t) => {
+        t.classList.remove("dragging", "drag-over-left", "drag-over-right");
+      });
+    });
+    wrap.addEventListener("dragover", (e) => {
+      if (dragSrcIdx === null) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      const rect = wrap.getBoundingClientRect();
+      const before = e.clientX - rect.left < rect.width / 2;
+      wrap.classList.toggle("drag-over-left", before);
+      wrap.classList.toggle("drag-over-right", !before);
+    });
+    wrap.addEventListener("dragleave", () => {
+      wrap.classList.remove("drag-over-left", "drag-over-right");
+    });
+    wrap.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const rect = wrap.getBoundingClientRect();
+      const before = e.clientX - rect.left < rect.width / 2;
+      wrap.classList.remove("drag-over-left", "drag-over-right");
+      if (dragSrcIdx === null) return;
+      reorderBatchImage(dragSrcIdx, before ? idx : idx + 1);
+    });
+    return wrap;
+  }
+  function rebuildThumbStripFromImages() {
+    thumbStrip.innerHTML = "";
+    selectedThumbIdx = null;
+    batchImages.forEach((c, idx) => { if (c) thumbStrip.appendChild(buildThumbEl(idx, c)); });
+    updateThumbSelectionUI();
+  }
+  function reorderBatchImage(fromIdx, toIdx) {
+    if (fromIdx === toIdx || fromIdx + 1 === toIdx) return; // dropped on itself / right after itself — no-op
+    // Moving one image can change adjacency all through the sequence, so
+    // there's no reliable way to carry old transition points forward —
+    // same reasoning as a format change, just triggered by drag instead.
+    const hadPoints = pairPoints.some((p) => p.points1.length > 0);
+    if (hadPoints) {
+      const proceed = confirm(
+        "Reordering changes which images are adjacent, which clears your point pairs — " +
+        "they're tied to the current transition order.\n\nContinue and clear them?"
+      );
+      if (!proceed) return;
+    }
+    const [moved] = batchImages.splice(fromIdx, 1);
+    const insertAt = fromIdx < toIdx ? toIdx - 1 : toIdx;
+    batchImages.splice(insertAt, 0, moved);
+
+    rebuildThumbStripFromImages();
+    initBatchPoints();
+    updateRenderEnabled();
+  }
+  function deleteBatchImage(idx) {
+    const imgs = batchImages.filter(Boolean);
+    if (idx < 0 || idx >= imgs.length) return;
+    const oldPairPoints = pairPoints;
+    batchImages.splice(idx, 1);
+    const newLen = batchImages.length;
+    // Transitions entirely before or after the removed image keep their
+    // points; the one adjacency that changed (old-idx-1 -> old-idx+1, now
+    // consecutive) has no valid old data and starts fresh.
+    const newPairPoints = [];
+    for (let j = 0; j < newLen - 1; j++) {
+      if (j < idx - 1) newPairPoints.push(oldPairPoints[j] || { points1: [], points2: [] });
+      else if (j === idx - 1) newPairPoints.push({ points1: [], points2: [] });
+      else newPairPoints.push(oldPairPoints[j + 1] || { points1: [], points2: [] });
+    }
+    pairPoints = newPairPoints;
+    currentPairIdx = clamp(currentPairIdx, 0, Math.max(0, newLen - 2));
+    batchPending = null;
+    autoCopyForward = false;
+
+    rebuildThumbStripFromImages();
+    batchCount.textContent = newLen + (newLen === 1 ? " image loaded" : " images loaded");
+    batchPointsCard.style.display = newLen >= 2 ? "block" : "none";
+    if (newLen >= 2) renderBatchPairCanvases();
+    outputBlock.style.display = "none";
+    hideRenderedTab();
+    updateRenderEnabled();
+  }
+  batchDeleteBtn.addEventListener("click", () => {
+    if (selectedThumbIdx === null) return;
+    deleteBatchImage(selectedThumbIdx);
+  });
+  function refreshBatchMeta(total, truncated) {
+    const loaded = batchImages.filter(Boolean).length;
+    batchMeta.style.display = "flex";
+    thumbHint.style.display = "block";
+    batchCount.textContent = loaded + " / " + total + " images loaded" + (truncated ? " (capped at " + MAX_BATCH + ")" : "");
+    if (loaded === total) {
+      rebuildThumbStripFromImages(); // adds drag-to-reorder handlers uniformly across all thumbs
+      initBatchPoints();
+    }
+    updateRenderEnabled();
+  }
+  batchClearBtn.addEventListener("click", () => {
+    batchImages = [];
+    thumbStrip.innerHTML = "";
+    batchMeta.style.display = "none";
+    thumbHint.style.display = "none";
+    outputBlock.style.display = "none";
+    hideRenderedTab();
+    pairPoints = [];
+    currentPairIdx = 0;
+    batchPending = null;
+    batchPointsCard.style.display = "none";
+    selectedThumbIdx = null;
+    updateThumbSelectionUI();
+    updateRenderEnabled();
+  });
+
+  // ================= batch point-pair editor =================
+  function initBatchPoints() {
+    const imgs = batchImages.filter(Boolean);
+    pairPoints = imgs.slice(0, -1).map(() => ({ points1: [], points2: [] }));
+    currentPairIdx = 0;
+    batchPending = null;
+    autoCopyForward = false;
+    batchPointsCard.style.display = imgs.length >= 2 ? "block" : "none";
+    if (imgs.length >= 2) renderBatchPairCanvases();
+  }
+  function currentPair() {
+    return pairPoints[currentPairIdx] || { points1: [], points2: [] };
+  }
+  function clamp(v, lo, hi) {
+    return Math.min(hi, Math.max(lo, v));
+  }
+  function copyFromPrevious() {
+    if (currentPairIdx === 0 || !pairPoints[currentPairIdx - 1]) return false;
+    const prev = pairPoints[currentPairIdx - 1];
+    if (prev.points2.length === 0) return false;
+    const pair = currentPair();
+    pair.points1.length = 0; pair.points2.length = 0;
+    prev.points2.forEach((p) => {
+      pair.points1.push({ x: p.x, y: p.y });
+      pair.points2.push({ x: p.x, y: p.y });
+    });
+    return true;
+  }
+  function renderBatchPairCanvases() {
+    const imgs = batchImages.filter(Boolean);
+    if (imgs.length < 2 || !pairPoints[currentPairIdx]) return;
+    // Once "copy from previous" has been used once, keep applying it to any
+    // pair the person hasn't touched yet, so a long sequence tracks forward
+    // automatically instead of needing a click on every transition. Face
+    // mode gets the same treatment — it's an ongoing mode, not a one-time
+    // action, so it should keep applying as you navigate through pairs, not
+    // just the one pair that happened to be on screen when it was toggled on.
+    if (faceModeOn && currentPair().points1.length === 0) {
+      runFaceDetectBatchPair(true);
+    } else if (autoCopyForward && currentPair().points1.length === 0) {
+      copyFromPrevious();
+    } else if (faceModeOn) {
+      // Pair already has points (from a previous detection or manual edit) —
+      // refresh the status to match what's actually on screen now, instead
+      // of leaving a stale count left over from whichever pair was viewed
+      // before this navigation.
+      faceModeStatus.textContent = "ready — " + currentPair().points1.length + " points placed, drag any to adjust";
+    }
+    batchLabelA.textContent = "image " + (currentPairIdx + 1);
+    batchLabelB.textContent = "image " + (currentPairIdx + 2);
+    batchFileNameA.textContent = imgs[currentPairIdx].dataset.filename || "";
+    batchFileNameB.textContent = imgs[currentPairIdx + 1].dataset.filename || "";
+    pairLabel.textContent = "transition " + (currentPairIdx + 1) + " of " + pairPoints.length;
+    pairPrevBtn.disabled = currentPairIdx === 0;
+    pairNextBtn.disabled = currentPairIdx >= pairPoints.length - 1;
+    redrawBatchA(); redrawBatchB();
+    updateBatchPointsUI();
+  }
+  function redrawBatchA() {
+    const imgs = batchImages.filter(Boolean);
+    const ctx = batchCanvasA.getContext("2d");
+    ctx.clearRect(0, 0, W, H);
+    ctx.drawImage(imgs[currentPairIdx], 0, 0);
+    currentPair().points1.forEach((p, i) => drawMarker(ctx, p, i + 1, "normal"));
+    if (batchPending) drawMarker(ctx, batchPending, currentPair().points1.length + 1, "pending");
+  }
+  function redrawBatchB() {
+    const imgs = batchImages.filter(Boolean);
+    const ctx = batchCanvasB.getContext("2d");
+    ctx.clearRect(0, 0, W, H);
+    ctx.drawImage(imgs[currentPairIdx + 1], 0, 0);
+    currentPair().points2.forEach((p, i) => drawMarker(ctx, p, i + 1, "normal"));
+  }
+  function updateBatchPointsUI() {
+    const pair = currentPair();
+    batchPointsCount.innerHTML = pair.points1.length + " point pair" + (pair.points1.length === 1 ? "" : "s") + " marked" +
+      (batchPending ? ' <span class="hint-b">— click the same spot on image ' + (currentPairIdx + 2) + '</span>' : "") +
+      (autoCopyForward ? ' <span style="color:var(--accent)">— auto-copying forward</span>' : "");
+    batchUndoBtn.disabled = pair.points1.length === 0 && !batchPending;
+    batchClearPairBtn.disabled = pair.points1.length === 0;
+    batchCopyPrevBtn.disabled = currentPairIdx === 0 || !pairPoints[currentPairIdx - 1] || pairPoints[currentPairIdx - 1].points2.length === 0;
+    if (autoCopyForward) {
+      batchCopyPrevBtn.style.color = "var(--accent)";
+      batchCopyPrevBtn.style.borderColor = "var(--accent)";
+      batchCopyPrevBtn.style.background = "rgba(94,205,196,0.08)";
+    } else {
+      batchCopyPrevBtn.style.color = "";
+      batchCopyPrevBtn.style.borderColor = "";
+      batchCopyPrevBtn.style.background = "";
+    }
+    batchHintA.textContent = (!batchPending) ? "click, or drag a point" : "";
+    batchHintB.textContent = batchPending ? "click here" : "drag to adjust";
+    batchBoxA.className = "canvas-box" + (!batchPending ? " awaiting-a" : "");
+    batchBoxB.className = "canvas-box" + (batchPending ? " awaiting-b" : "");
+  }
+
+  batchCanvasA.addEventListener("pointerdown", (e) => {
+    if (!pairPoints[currentPairIdx]) return;
+    const p = canvasCoords(e, batchCanvasA);
+    const pair = currentPair();
+    if (batchPending) { batchPending = p; redrawBatchA(); return; }
+    const hit = findHit(pair.points1, p);
+    if (hit !== -1) {
+      batchDragPanel = "A"; batchDragIndex = hit;
+      batchCanvasA.setPointerCapture(e.pointerId);
+      return;
+    }
+    batchPending = p;
+    redrawBatchA();
+    updateBatchPointsUI();
+  });
+  batchCanvasA.addEventListener("pointermove", (e) => {
+    if (batchDragPanel !== "A" || batchDragIndex === null) return;
+    currentPair().points1[batchDragIndex] = canvasCoords(e, batchCanvasA);
+    redrawBatchA();
+  });
+  batchCanvasA.addEventListener("pointerup", () => { batchDragPanel = null; batchDragIndex = null; });
+
+  batchCanvasB.addEventListener("pointerdown", (e) => {
+    if (!pairPoints[currentPairIdx]) return;
+    const p = canvasCoords(e, batchCanvasB);
+    const pair = currentPair();
+    if (batchPending) {
+      pair.points1.push(batchPending); pair.points2.push(p); batchPending = null;
+      redrawBatchA(); redrawBatchB(); updateBatchPointsUI();
+      return;
+    }
+    const hit = findHit(pair.points2, p);
+    if (hit !== -1) {
+      batchDragPanel = "B"; batchDragIndex = hit;
+      batchCanvasB.setPointerCapture(e.pointerId);
+    }
+  });
+  batchCanvasB.addEventListener("pointermove", (e) => {
+    if (batchDragPanel !== "B" || batchDragIndex === null) return;
+    currentPair().points2[batchDragIndex] = canvasCoords(e, batchCanvasB);
+    redrawBatchB();
+  });
+  batchCanvasB.addEventListener("pointerup", () => { batchDragPanel = null; batchDragIndex = null; });
+
+  pairPrevBtn.addEventListener("click", () => {
+    if (currentPairIdx > 0) { currentPairIdx--; batchPending = null; renderBatchPairCanvases(); }
+  });
+  pairNextBtn.addEventListener("click", () => {
+    if (currentPairIdx < pairPoints.length - 1) { currentPairIdx++; batchPending = null; renderBatchPairCanvases(); }
+  });
+  batchUndoBtn.addEventListener("click", () => {
+    const pair = currentPair();
+    if (batchPending) batchPending = null;
+    else { pair.points1.pop(); pair.points2.pop(); }
+    redrawBatchA(); redrawBatchB(); updateBatchPointsUI();
+  });
+  batchClearPairBtn.addEventListener("click", () => {
+    const pair = currentPair();
+    pair.points1.length = 0; pair.points2.length = 0;
+    batchPending = null;
+    redrawBatchA(); redrawBatchB(); updateBatchPointsUI();
+  });
+  batchCopyPrevBtn.addEventListener("click", () => {
+    if (!copyFromPrevious()) return;
+    autoCopyForward = true;
+    batchPending = null;
+    redrawBatchA(); redrawBatchB(); updateBatchPointsUI();
+  });
+
+  dropZone.addEventListener("click", (e) => {
+    if (e.target.closest("#chooseFolder") || e.target.closest("#chooseFiles")) return;
+  });
+  document.getElementById("chooseFolder").addEventListener("click", (e) => { e.stopPropagation(); document.getElementById("folderInput").click(); });
+  document.getElementById("chooseFiles").addEventListener("click", (e) => { e.stopPropagation(); document.getElementById("filesInput").click(); });
+  document.getElementById("folderInput").addEventListener("change", (e) => handleBatchFiles(e.target.files));
+  document.getElementById("filesInput").addEventListener("change", (e) => handleBatchFiles(e.target.files));
+
+  dropZone.addEventListener("dragover", (e) => { e.preventDefault(); dropZone.classList.add("drag-over"); });
+  dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
+  dropZone.addEventListener("drop", async (e) => {
+    e.preventDefault();
+    dropZone.classList.remove("drag-over");
+    const items = e.dataTransfer.items;
+    let files = [];
+    if (items && items.length && items[0].webkitGetAsEntry) {
+      for (const item of items) {
+        const entry = item.webkitGetAsEntry();
+        if (entry) await traverseEntry(entry, files);
+      }
+    } else {
+      files = Array.from(e.dataTransfer.files);
+    }
+    handleBatchFiles(files);
+  });
+
+  // ================= render enable/disable =================
+  function updateRenderEnabled() {
+    const ready = mode === "single" ? (hasA && hasB) : batchImages.filter(Boolean).length >= 2;
+    renderActionRow.style.display = ready ? "flex" : "none";
+    renderBtn.disabled = !ready || isRendering;
+    pngSeqBtn.disabled = !ready || isRendering;
+    const reason = mode === "single" ? "Upload a start and end image first" : "Load at least 2 images first";
+    renderBtn.title = ready ? "" : reason;
+    pngSeqBtn.title = ready ? pngSeqBtnBaseTitle : reason;
+  }
+
+  // ================= segment building =================
+  function timestampedFilename() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    const stamp = [d.getFullYear(), pad(d.getMonth() + 1), pad(d.getDate())].join("-") + "-" +
+      [pad(d.getHours()), pad(d.getMinutes()), pad(d.getSeconds())].join("-");
+    return stamp + "-morph";
+  }
+  function buildSingleSegments(fps, holdFrames, transFrames) {
+    const { all1, all2, triangles } = getTriangulation();
+    return [
+      { kind: "hold", canvas: cleanA, frames: holdFrames },
+      { kind: "morph", all1, all2, triangles, sourceA: cleanA, sourceB: cleanB, frames: transFrames },
+      { kind: "hold", canvas: cleanB, frames: holdFrames },
+    ];
+  }
+  function buildBatchSegments(fps, holdFrames, transFrames) {
+    const segs = [];
+    const imgs = batchImages.filter(Boolean);
+    for (let i = 0; i < imgs.length; i++) {
+      segs.push({ kind: "hold", canvas: imgs[i], frames: holdFrames });
+      if (i < imgs.length - 1) {
+        const pair = pairPoints[i] || { points1: [], points2: [] };
+        const { all1, all2, triangles } = computeTriangulation(pair.points1, pair.points2);
+        segs.push({ kind: "morph", all1, all2, triangles, sourceA: imgs[i], sourceB: imgs[i + 1], frames: transFrames });
+      }
+    }
+    return segs;
+  }
+
+  // ================= render =================
+  renderBtn.addEventListener("click", async () => {
+    if (isRendering) return;
+    if (mode === "single" && !(hasA && hasB)) return;
+    if (mode === "batch" && batchImages.filter(Boolean).length < 2) return;
+
+    isRendering = true;
+    renderBtn.disabled = true;
+    pngSeqBtn.disabled = true;
+    outputBlock.style.display = "none";
+    hideRenderedTab();
+    statusLine.textContent = "";
+    showCancelButton();
+    clearZipPartsList();
+
+    try {
+      const fps = parseInt(fpsSlider.value);
+      lastRenderFps = fps;
+      const holdFrames = Math.round(parseFloat(holdSlider.value) * fps);
+      const transFrames = Math.max(2, Math.round(parseFloat(durationSlider.value) * fps));
+      const segments = mode === "single" ? buildSingleSegments(fps, holdFrames, transFrames) : buildBatchSegments(fps, holdFrames, transFrames);
+      const totalFrames = segments.reduce((s, seg) => s + seg.frames, 0) || 1;
+
+      const ctx = hiddenOutput.getContext("2d");
+      const stream = hiddenOutput.captureStream(fps);
+      // Chromium ships native MP4 muxing in MediaRecorder now — no ffmpeg.wasm
+      // needed (that approach was abandoned earlier: ffmpeg.wasm's worker
+      // script path is hardcoded at build time and can't be fixed from a
+      // static HTML file). Codec-specific MP4 strings vary by Chrome version,
+      // so try the most specific first and fall back down to bare "video/mp4".
+      // WebM remains the fallback for browsers that support neither (Firefox,
+      // older Chromium). Respects the format toggle, but falls back to
+      // whichever format the browser actually supports if the preferred one
+      // isn't available here.
+      const MP4_CANDIDATES = ["video/mp4;codecs=avc1", "video/mp4;codecs=h264", "video/mp4"];
+      const WEBM_CANDIDATES = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
+      const mp4Type = MP4_CANDIDATES.find((t) => MediaRecorder.isTypeSupported(t));
+      const webmType = WEBM_CANDIDATES.find((t) => MediaRecorder.isTypeSupported(t));
+      const mimeType = videoFormatPref === "webm" ? (webmType || mp4Type) : (mp4Type || webmType);
+      const container = mimeType.startsWith("video/mp4") ? "mp4" : "webm";
+      // Scale bitrate with resolution so quality actually matches the larger
+      // frame size instead of staying capped at a rate tuned for 480x360.
+      // High-detail/noisy footage (fine textures, lots of edges) needs real
+      // headroom or the encoder starts dropping detail unevenly frame-to-frame —
+      // which reads as a sudden pop/drop even though the underlying blend math
+      // is a continuous full-frame alpha cross-dissolve. Floor and scale bumped
+      // up accordingly; this trades larger files for not starving the encoder.
+      const bitsPerSecond = Math.min(40_000_000, Math.max(4_000_000, Math.round(W * H * fps * 0.06)));
+      const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: bitsPerSecond });
+      const chunks = [];
+      recorder.ondataavailable = (e) => e.data.size > 0 && chunks.push(e.data);
+      const stopped = new Promise((resolve) => (recorder.onstop = resolve));
+
+      recorder.start();
+      let frameCounter = 0;
+      frameLoop:
+      for (const seg of segments) {
+        for (let i = 0; i < seg.frames; i++) {
+          if (renderCancelled) break frameLoop;
+          if (seg.kind === "hold") {
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, W, H);
+            ctx.drawImage(seg.canvas, 0, 0);
+          } else {
+            const t = seg.frames <= 1 ? 1 : i / (seg.frames - 1);
+            drawMorphFrameTriangulated(ctx, t, seg.all1, seg.all2, seg.triangles, seg.sourceA, seg.sourceB);
+          }
+          frameCounter++;
+          renderBtnText.textContent = "rendering… " + Math.round((frameCounter / totalFrames) * 100) + "%";
+          await new Promise((r) => setTimeout(r, 1000 / fps));
+        }
+      }
+
+      if (renderCancelled) {
+        recorder.stop();
+        await stopped;
+        statusLine.textContent = "Render cancelled after " + frameCounter + " of " + totalFrames + " frames.";
+      } else {
+        await new Promise((r) => setTimeout(r, 250));
+        recorder.stop();
+        await stopped;
+
+        const blob = new Blob(chunks, { type: "video/" + container });
+        const filename = timestampedFilename() + "." + container;
+        const url = URL.createObjectURL(blob);
+        outputVideo.src = url;
+        downloadLink.href = url;
+        downloadLink.setAttribute("download", filename);
+        downloadLabel.textContent = "download " + filename;
+        outputBlock.style.display = "block";
+        showRenderedTab();
+      }
+    } catch (err) {
+      statusLine.textContent = "Render failed: " + (err && err.message ? err.message : "see console") +
+        " — try \"export PNG sequence\" instead, or check the browser console for details.";
+      console.error(err);
+    }
+
+    isRendering = false;
+    hideCancelButton();
+    renderBtnText.textContent = "render video";
+    updateRenderEnabled();
+  });
+
+  // ================= PNG sequence export (preserves transparency, streams to avoid memory buildup) =================
+  // canvas.captureStream() -> MediaRecorder discards alpha before it ever reaches
+  // the encoder (a long-standing gap in the MediaRecorder spec, not something
+  // fixable from here), so transparent PNGs export as flat black in the WebM.
+  // This path sidesteps video encoding entirely: every frame is saved as a real
+  // PNG (alpha intact). In Chrome/Edge, frames stream straight to a chosen folder
+  // and are discarded from memory immediately. Firefox/Safari have no API for
+  // that, and triggering one browser download per frame there turned out worse
+  // than the memory tradeoff: the FIRST such download trips a native "allow
+  // downloads on this site?" permission sheet that blocks the entire page —
+  // including this app's own Cancel button — until answered, with no way for
+  // JS to detect which button the person clicked. So on those browsers, frames
+  // are collected and zipped into a single download at the very end instead:
+  // only one possible permission prompt, it appears after everything's already
+  // rendered (never mid-loop), and Cancel stays fully clickable throughout.
+  const SUPPORTS_FS_ACCESS = "showDirectoryPicker" in window;
+  const pngSeqBtnBaseTitle = SUPPORTS_FS_ACCESS
+    ? "Pick a folder — each frame streams straight to disk as it's rendered, so nothing builds up in memory"
+    : "Renders every frame, then downloads them all as one zip (this browser can't stream files to disk)";
+  pngSeqBtn.title = pngSeqBtnBaseTitle;
+
+  function canvasToPngBytes(canvas) {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (!blob) { reject(new Error("PNG encode failed")); return; }
+        blob.arrayBuffer().then((buf) => resolve(new Uint8Array(buf)));
+      }, "image/png");
+    });
+  }
+
+  // Minimal store-method (uncompressed) ZIP writer — fine here since PNGs are
+  // already compressed, and it avoids pulling in an external library.
+  const CRC_TABLE = (() => {
+    const table = [];
+    for (let n = 0; n < 256; n++) {
+      let c = n;
+      for (let k = 0; k < 8; k++) c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+      table[n] = c >>> 0;
+    }
+    return table;
+  })();
+  function crc32(bytes) {
+    let crc = 0xffffffff;
+    for (let i = 0; i < bytes.length; i++) crc = CRC_TABLE[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8);
+    return (crc ^ 0xffffffff) >>> 0;
+  }
+  function leU16(n) { const b = new Uint8Array(2); new DataView(b.buffer).setUint16(0, n, true); return b; }
+  function leU32(n) { const b = new Uint8Array(4); new DataView(b.buffer).setUint32(0, n, true); return b; }
+  function concatBytes(arrays) {
+    let total = 0;
+    for (const a of arrays) total += a.length;
+    const out = new Uint8Array(total);
+    let offset = 0;
+    for (const a of arrays) { out.set(a, offset); offset += a.length; }
+    return out;
+  }
+  function formatBytes(n) {
+    if (n < 1024 * 1024) return Math.round(n / 1024) + " KB";
+    return (n / (1024 * 1024)).toFixed(1) + " MB";
+  }
+  function buildZip(files) {
+    // Each entry contributes just 2 Blob parts (a small concatenated header +
+    // the file's own bytes) instead of a dozen tiny fragments — Safari's Blob
+    // assembly bogs down badly (sometimes hangs outright) once part counts get
+    // into the thousands, which a per-file frame export hits fast.
+    const localParts = [], centralParts = [];
+    const encoder = new TextEncoder();
+    let offset = 0;
+    for (const f of files) {
+      const nameBytes = encoder.encode(f.name);
+      const crc = crc32(f.data);
+      const size = f.data.length;
+      const localOffset = offset;
+      const localHeader = concatBytes([
+        leU32(0x04034b50), leU16(20), leU16(0), leU16(0), leU16(0), leU16(0x21),
+        leU32(crc), leU32(size), leU32(size), leU16(nameBytes.length), leU16(0), nameBytes,
+      ]);
+      localParts.push(localHeader, f.data);
+      offset += localHeader.length + size;
+      const centralHeader = concatBytes([
+        leU32(0x02014b50), leU16(20), leU16(20), leU16(0), leU16(0), leU16(0), leU16(0x21),
+        leU32(crc), leU32(size), leU32(size), leU16(nameBytes.length), leU16(0), leU16(0),
+        leU16(0), leU16(0), leU32(0), leU32(localOffset), nameBytes,
+      ]);
+      centralParts.push(centralHeader);
+    }
+    const centralDirOffset = offset;
+    const centralDirSize = centralParts.reduce((s, p) => s + p.length, 0);
+    const eocd = [
+      leU32(0x06054b50), leU16(0), leU16(0), leU16(files.length), leU16(files.length),
+      leU32(centralDirSize), leU32(centralDirOffset), leU16(0),
+    ];
+    return new Blob([...localParts, ...centralParts, ...eocd], { type: "application/zip" });
+  }
+
+  pngSeqBtn.addEventListener("click", async () => {
+    if (isRendering) return;
+    if (mode === "single" && !(hasA && hasB)) return;
+    if (mode === "batch" && batchImages.filter(Boolean).length < 2) return;
+
+    if (!SUPPORTS_FS_ACCESS) {
+      const proceed = confirm(
+        "This browser can't write PNG frames directly to a folder (that only works in Chrome or Edge).\n\n" +
+        "Instead, every frame will be rendered first and then downloaded together as a single zip file — " +
+        "for a long or high-resolution sequence that means holding all of it in memory until the very end, " +
+        "and it may crash your browser, especially with batch exports.\n\n" +
+        "For a smoother, lower-memory export, switch to Chrome or Edge.\n\n" +
+        "Continue anyway in this browser?"
+      );
+      if (!proceed) return;
+    }
+
+    // Ask for the destination folder BEFORE doing any rendering work — picker
+    // calls must happen directly on the user gesture, and there's no point
+    // drawing frames if the person cancels the dialog.
+    let dirHandle = null;
+    if (SUPPORTS_FS_ACCESS) {
+      try {
+        dirHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+      } catch (err) {
+        return; // cancelled the picker — nothing rendered, nothing to clean up
+      }
+    }
+
+    isRendering = true;
+    renderBtn.disabled = true;
+    pngSeqBtn.disabled = true;
+    outputBlock.style.display = "none";
+    hideRenderedTab();
+    statusLine.textContent = "";
+    showCancelButton();
+    clearZipPartsList();
+
+    const fps = parseInt(fpsSlider.value);
+    const holdFrames = Math.round(parseFloat(holdSlider.value) * fps);
+    const transFrames = Math.max(2, Math.round(parseFloat(durationSlider.value) * fps));
+    const segments = mode === "single" ? buildSingleSegments(fps, holdFrames, transFrames) : buildBatchSegments(fps, holdFrames, transFrames);
+    const totalFrames = segments.reduce((s, seg) => s + seg.frames, 0) || 1;
+    const digits = String(totalFrames).length;
+    const stamp = timestampedFilename();
+    const zipFiles = []; // only used when dirHandle is null (Firefox/Safari)
+
+    try {
+      const ctx = hiddenOutput.getContext("2d");
+      let frameCounter = 0;
+      frameLoop:
+      for (const seg of segments) {
+        for (let i = 0; i < seg.frames; i++) {
+          if (renderCancelled) break frameLoop;
+          if (seg.kind === "hold") {
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, W, H);
+            ctx.drawImage(seg.canvas, 0, 0);
+          } else {
+            const t = seg.frames <= 1 ? 1 : i / (seg.frames - 1);
+            drawMorphFrameTriangulated(ctx, t, seg.all1, seg.all2, seg.triangles, seg.sourceA, seg.sourceB);
+          }
+          const bytes = await canvasToPngBytes(hiddenOutput);
+          frameCounter++;
+          const name = stamp + "-frame_" + String(frameCounter).padStart(digits, "0") + ".png";
+
+          if (dirHandle) {
+            // Write straight to disk and let `bytes` fall out of scope —
+            // nothing from this frame is retained once the write completes.
+            const fileHandle = await dirHandle.getFileHandle(name, { create: true });
+            const writable = await fileHandle.createWritable();
+            await writable.write(bytes);
+            await writable.close();
+            pngSeqBtnText.textContent = "writing… " + Math.round((frameCounter / totalFrames) * 100) + "%";
+          } else {
+            zipFiles.push({ name, data: bytes });
+            pngSeqBtnText.textContent = "rendering… " + Math.round((frameCounter / totalFrames) * 100) + "%";
+          }
+          if (frameCounter % 5 === 0) await new Promise((r) => setTimeout(r, 0)); // keep the tab responsive
+        }
+      }
+
+      if (renderCancelled) {
+        statusLine.textContent = "PNG export cancelled after " + frameCounter + " of " + totalFrames + " frames" +
+          (dirHandle ? " (files already written stay in the folder)." : " — nothing was downloaded.");
+      } else if (dirHandle) {
+        statusLine.textContent = totalFrames + " PNG frames written directly to the folder you chose.";
+      } else {
+        pngSeqBtnText.textContent = "zipping…";
+        // Split into multiple zips if the total is large — Safari is known to
+        // hang indefinitely (stuck as "*.download") on very large single blob
+        // downloads, independent of how many parts built the Blob. Bounding
+        // each archive's size keeps every individual download well inside the
+        // range Safari handles reliably.
+        const ZIP_CHUNK_LIMIT = 150 * 1024 * 1024; // ~150MB per zip
+        const chunks = [];
+        let current = [], currentSize = 0;
+        for (const f of zipFiles) {
+          if (current.length && currentSize + f.data.length > ZIP_CHUNK_LIMIT) {
+            chunks.push(current);
+            current = []; currentSize = 0;
+          }
+          current.push(f);
+          currentSize += f.data.length;
+        }
+        if (current.length) chunks.push(current);
+
+        // Auto-triggering a run of downloads in a loop turned out unreliable —
+        // browsers silently throttle/drop programmatic downloads beyond the
+        // first couple in quick succession, with no way for JS to detect which
+        // ones actually landed (that's exactly what dropped 19 of 21 parts).
+        // So instead: build every part, then hand back a list of real links —
+        // each click is a genuine user gesture, which browsers always honor,
+        // and any part that didn't save can just be clicked again individually.
+        clearZipPartsList();
+        for (let c = 0; c < chunks.length; c++) {
+          pngSeqBtnText.textContent = chunks.length > 1
+            ? "zipping part " + (c + 1) + " of " + chunks.length + "…"
+            : "zipping…";
+          const chunkFrames = chunks[c];
+          const chunkBytes = chunkFrames.reduce((s, f) => s + f.data.length, 0);
+          const zipBlob = buildZip(chunkFrames);
+          const filename = chunks.length > 1
+            ? stamp + "-frames-part" + (c + 1) + "of" + chunks.length + ".zip"
+            : stamp + "-frames.zip";
+          const url = URL.createObjectURL(zipBlob);
+          zipPartUrls.push(url);
+
+          const link = document.createElement("a");
+          link.className = "zip-part-link";
+          link.href = url;
+          link.download = filename;
+          const label = document.createElement("span");
+          label.className = "zpl-label";
+          label.innerHTML = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v12M12 16l-4-4M12 16l4-4"/><path d="M4 18v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1"/></svg>' +
+            (chunks.length > 1 ? "part " + (c + 1) + " of " + chunks.length : filename);
+          const meta = document.createElement("span");
+          meta.className = "zpl-meta";
+          meta.textContent = chunkFrames.length + " frames · " + formatBytes(chunkBytes);
+          link.appendChild(label);
+          link.appendChild(meta);
+          zipPartsList.appendChild(link);
+
+          if (c % 5 === 0) await new Promise((r) => setTimeout(r, 0)); // keep the tab responsive while zipping many parts
+        }
+        zipPartsList.style.display = "flex";
+        // The first (or only) part is safe to auto-trigger — flood protection
+        // only kicks in once several downloads fire back-to-back — but it's
+        // also just sitting right there in the list if that one needs a retry too.
+        if (chunks.length >= 1) {
+          const first = zipPartsList.querySelector("a");
+          if (first) first.click();
+        }
+        statusLine.textContent = chunks.length > 1
+          ? totalFrames + " PNG frames zipped into " + chunks.length + " parts. The first started downloading automatically — click any part below (including that one again) to get it."
+          : totalFrames + " PNG frames zipped. It should have started downloading — click the link below if it didn't.";
+        showRenderedTab();
+      }
+    } catch (err) {
+      statusLine.textContent = "PNG export stopped: " + (err && err.message ? err.message : "see console");
+      console.error(err);
+    }
+
+    isRendering = false;
+    hideCancelButton();
+    pngSeqBtnText.textContent = "export PNG sequence";
+    updateRenderEnabled();
+  });
+
+  // ================= output video keyboard shortcuts =================
+  // A practical subset of YouTube's player shortcuts, scoped to only fire
+  // when the rendered output is actually visible and focus isn't in a form
+  // control (so typing in the duration-override field etc. isn't hijacked).
+  document.addEventListener("keydown", (e) => {
+    if (outputBlock.style.display === "none" || !outputVideo.src) return;
+    const tag = document.activeElement && document.activeElement.tagName;
+    if (["INPUT", "TEXTAREA", "SELECT", "BUTTON", "A"].includes(tag)) return;
+
+    const v = outputVideo;
+    const dur = isNaN(v.duration) ? 0 : v.duration;
+    const frameDur = 1 / (lastRenderFps || 30);
+
+    switch (e.key) {
+      case " ": case "k":
+        e.preventDefault();
+        v.paused ? v.play() : v.pause();
+        break;
+      case "ArrowLeft":
+        e.preventDefault();
+        v.currentTime = Math.max(0, v.currentTime - 5);
+        break;
+      case "ArrowRight":
+        e.preventDefault();
+        v.currentTime = Math.min(dur, v.currentTime + 5);
+        break;
+      case "j":
+        e.preventDefault();
+        v.currentTime = Math.max(0, v.currentTime - 10);
+        break;
+      case "l":
+        e.preventDefault();
+        v.currentTime = Math.min(dur, v.currentTime + 10);
+        break;
+      case ",":
+        e.preventDefault();
+        v.pause();
+        v.currentTime = Math.max(0, v.currentTime - frameDur);
+        break;
+      case ".":
+        e.preventDefault();
+        v.pause();
+        v.currentTime = Math.min(dur, v.currentTime + frameDur);
+        break;
+      case "m":
+        e.preventDefault();
+        v.muted = !v.muted;
+        break;
+      case "f":
+        e.preventDefault();
+        if (document.fullscreenElement) document.exitFullscreen();
+        else v.requestFullscreen();
+        break;
+      default:
+        if (/^[0-9]$/.test(e.key)) {
+          e.preventDefault();
+          v.currentTime = (parseInt(e.key, 10) / 10) * dur;
+        }
+    }
+  });
+
+  updateSingleUI();
+  updateRenderEnabled();
+})();
+</script>
+</body>
+</html>
